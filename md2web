@@ -8,6 +8,8 @@ markdown article.md > content.html
 hxextract h1 content.html > headline.html
 hxincl -f -x template.html > $fname
 
+hxmultitoc > index.html
+
 # clean up
 rm headline.html
 rm content.html
