@@ -5,7 +5,11 @@ fname="$(date +"%FT%H%M%z").html"
 
 # do the conversion
 markdown article.md > content.html
-hxextract h1 content.html > headline.html
+h1=$(hxextract h1 content.html | sed -e 's/<h1>//g' -e 's/<\/h1>//g')
+echo $h1 > headline.html
+
+sed -i 's/"$h1"//g' content.html
+
 hxincl -f -x template.html > $fname
 
 hxmultitoc > index.html
