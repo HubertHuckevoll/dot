@@ -8,7 +8,13 @@ markdown article.md > content.html
 xmllint --html --xpath "//h1/text()" content.html > headline.html
 hxincl -f -x template.html > $fname
 
+hxnormalize -e $fname
+
+
 hxmultitoc -s "<html><head><title>Index</title></head><body>" -e "</body></html>" *.html > index.html
+
+hxnormalize -e index.html
+
 
 # clean up
 rm headline.html
