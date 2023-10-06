@@ -5,14 +5,10 @@ fname="$(date +"%FT%H%M%z").html"
 
 # do the conversion
 markdown article.md > content.html
-h1=$(hxextract h1 content.html | sed -e 's/<h1>//g' -e 's/<\/h1>//g')
-echo $h1 > headline.html
-
-sed -i 's/"$h1"//g' content.html
-
+xmllint --html --xpath "//h1/text()" content.html > headline.html
 hxincl -f -x template.html > $fname
 
-hxmultitoc > index.html
+hxmultitoc -s "<html><head><title>Index</title></head><body>" -e "</body></html>" *.html > index.html
 
 # clean up
 rm headline.html
@@ -20,3 +16,7 @@ rm content.html
 
 # Unused code for reference
 # markdown --html4tags article.md | recode utf-8..cp1252 > content.html
+# h1=$(hxextract h1 content.html | sed -e 's/<h1>//g' -e 's/<\/h1>//g')
+# sed -i 's/"$h1"//g' content.html
+# xmllint --html --format $fname
+# hxmultitoc > index.html
