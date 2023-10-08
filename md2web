@@ -1,13 +1,21 @@
 #!/bin/bash
+# a tiny static site generator
+# needs:
+# sudo apt install ...
+# libxml2-utils
+# recode
+# markdown
+# html-xml-utils
+# busybox (for staging server)
 
 # set up variables
-projectD=~/meyerk/
+projectD=$1"/"
+markdownF=$projectD"md/"$2
 htmlD=$projectD"_published/"
-markdownF=$1
 
 templateD=$projectD"templates/"
 templateF=$templateD"article.html"
-articleF=$htmlD"$(basename "$1" .md).html"
+articleF=$htmlD"$(basename "$markdownF" .md).html"
 contentF=$templateD"content.html"
 headlineF=$templateD"headline.html"
 
