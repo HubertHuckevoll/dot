@@ -1,7 +1,6 @@
 #!/bin/bash
 # a tiny static site generator
-# needs:
-# sudo apt install ...
+# needs (sudo apt install ...):
 # libxml2-utils
 # recode
 # markdown
@@ -11,7 +10,7 @@
 # set up variables
 projectD=$1"/"
 markdownF=$projectD"md/"$2
-htmlD=$projectD"_published/"
+htmlD=$projectD"_published/blog/"
 
 templateD=$projectD"templates/"
 templateF=$templateD"article.html"
