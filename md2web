@@ -1,24 +1,30 @@
 #!/bin/bash
 
 # set up variables
-fname="$(date +"%FT%H%M%z").html"
+htmlFD=~/dot/installed/html
+markdownF="article.md"
+templateF="template.html"
+articleF="$(date +"%FT%H%M%z").html"
+contentF="content.html"
+headlineF="headline.html"
+preampleF="preample.html"
+postampleF="postample.html"
+tempF="_temp.html"
 
 # do the conversion
-markdown article.md > content.html
-xmllint --html --xpath "//h1/text()" content.html > headline.html
-hxincl -f -x template.html > $fname
+markdown "$markdownF" > "$contentF"
+xmllint --html --xpath "//h1/text()" "$contentF" > "$headlineF"
+hxincl -f -x "$templateF" > "$tempF"
+hxnormalize -e "$tempF" > "$articleF"
 
-hxnormalize -e $fname
-
-
-hxmultitoc -s "<html><head><title>Index</title></head><body>" -e "</body></html>" *.html > index.html
-
-hxnormalize -e index.html
-
+cp "$articleF" $htmlFD
+#hxmultitoc -s "$(cat "$preampleF")" -e "$(cat "$postampleF")" "$htmlFD"*.html > "$tempF"
+#hxnormalize -e "$tempF" > index.html
 
 # clean up
-rm headline.html
-rm content.html
+#rm "$headlineF"
+#rm "$contentF"
+#rm "$tempF"
 
 # Unused code for reference
 # markdown --html4tags article.md | recode utf-8..cp1252 > content.html
