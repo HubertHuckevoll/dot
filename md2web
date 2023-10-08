@@ -1,15 +1,20 @@
 #!/bin/bash
 
 # set up variables
-htmlFD=~/dot/installed/html
-markdownF="article.md"
-templateF="template.html"
-articleF="$(date +"%FT%H%M%z").html"
-contentF="content.html"
-headlineF="headline.html"
-preampleF="preample.html"
-postampleF="postample.html"
-tempF="_temp.html"
+projectD=~/meyerk/
+htmlD=$projectD"_published/"
+markdownF=$1
+
+templateD=$projectD"templates/"
+templateF=$templateD"article.html"
+articleF=$htmlD"$(basename "$1" .md).html"
+contentF=$templateD"content.html"
+headlineF=$templateD"headline.html"
+
+indexF=$htmlD"index.html"
+preampleF=$templateD"preample.html"
+postampleF=$templateD"postample.html"
+tempF=$templateD"_temp.html"
 
 # do the conversion
 markdown "$markdownF" > "$contentF"
@@ -17,14 +22,16 @@ xmllint --html --xpath "//h1/text()" "$contentF" > "$headlineF"
 hxincl -f -x "$templateF" > "$tempF"
 hxnormalize -e "$tempF" > "$articleF"
 
-cp "$articleF" $htmlFD
-#hxmultitoc -s "$(cat "$preampleF")" -e "$(cat "$postampleF")" "$htmlFD"*.html > "$tempF"
-#hxnormalize -e "$tempF" > index.html
+rm "$indexF"
+cd $htmlD
+hxmultitoc -s "$(cat "$preampleF")" -e "$(cat "$postampleF")" *.html > "$tempF"
+cd "$OLDPWD"
+hxnormalize -e "$tempF" > "$indexF"
 
 # clean up
-#rm "$headlineF"
-#rm "$contentF"
-#rm "$tempF"
+rm "$headlineF"
+rm "$contentF"
+rm "$tempF"
 
 # Unused code for reference
 # markdown --html4tags article.md | recode utf-8..cp1252 > content.html
@@ -32,3 +39,4 @@ cp "$articleF" $htmlFD
 # sed -i 's/"$h1"//g' content.html
 # xmllint --html --format $fname
 # hxmultitoc > index.html
+# "$(date +"%FT%H%M%z").html"
