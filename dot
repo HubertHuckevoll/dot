@@ -7,8 +7,6 @@
 # html-xml-utils
 # busybox (for staging server)
 
-
-
 # set up variables
 projectD=$1"/"
 htmlD=$projectD"_published/blog/"
@@ -24,12 +22,10 @@ postampleF=$templateD"postample.html"
 
 tempF=$templateD"_temp.html"
 
-
 if [ -z "${2}" ]; # if var is empty
 then
   shopt -s nullglob
-  files=$projectD"md/*.md"
-  markdownFiles=($files)
+  markdownFiles=($projectD"md/*")
 else
   markdownFiles+=($projectD"md/"$2)
 fi
@@ -39,9 +35,9 @@ do
   articleF=$htmlD"$(basename "$markdownF" .md).html"
 
   # do the conversion
-  markdown "$markdownF" > "$contentF"
+  markdown "$markdownF" | xml2asc > "$contentF"
   xmllint --html --xpath "//h1/text()" "$contentF" > "$headlineF"
-  hxincl -f -x "$templateF" > "$tempF"
+  hxincl -f "$templateF" | xml2asc > "$tempF"
   hxnormalize -e "$tempF" > "$articleF"
 
   rm "$indexF" > /dev/null 2>&1
