@@ -28,8 +28,6 @@ tempF=$templateD"_temp.html"
 if [ -z "${2}" ]; # if var is empty
 then
   shopt -s nullglob
-#  array=(*)
-#  array2=(file*)
   files=$projectD"md/*.md"
   markdownFiles=($files)
 else
@@ -46,7 +44,7 @@ do
   hxincl -f -x "$templateF" > "$tempF"
   hxnormalize -e "$tempF" > "$articleF"
 
-  rm "$indexF" > /dev/null
+  rm "$indexF" > /dev/null 2>&1
   cd $htmlD
   hxmultitoc -s "$(cat "$preampleF")" -e "$(cat "$postampleF")" *.html > "$tempF"
   cd "$OLDPWD"
