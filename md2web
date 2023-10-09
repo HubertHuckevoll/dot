@@ -7,38 +7,56 @@
 # html-xml-utils
 # busybox (for staging server)
 
+
+
 # set up variables
 projectD=$1"/"
-markdownF=$projectD"md/"$2
 htmlD=$projectD"_published/blog/"
 
 templateD=$projectD"templates/"
 templateF=$templateD"article.html"
-articleF=$htmlD"$(basename "$markdownF" .md).html"
 contentF=$templateD"content.html"
 headlineF=$templateD"headline.html"
 
 indexF=$htmlD"index.html"
 preampleF=$templateD"preample.html"
 postampleF=$templateD"postample.html"
+
 tempF=$templateD"_temp.html"
 
-# do the conversion
-markdown "$markdownF" > "$contentF"
-xmllint --html --xpath "//h1/text()" "$contentF" > "$headlineF"
-hxincl -f -x "$templateF" > "$tempF"
-hxnormalize -e "$tempF" > "$articleF"
 
-rm "$indexF"
-cd $htmlD
-hxmultitoc -s "$(cat "$preampleF")" -e "$(cat "$postampleF")" *.html > "$tempF"
-cd "$OLDPWD"
-hxnormalize -e "$tempF" > "$indexF"
+if [ -z "${2}" ]; # if var is empty
+then
+  shopt -s nullglob
+#  array=(*)
+#  array2=(file*)
+  files=$projectD"md/*.md"
+  markdownFiles=($files)
+else
+  markdownFiles+=($projectD"md/"$2)
+fi
 
-# clean up
-rm "$headlineF"
-rm "$contentF"
-rm "$tempF"
+for markdownF in $markdownFiles
+do
+  articleF=$htmlD"$(basename "$markdownF" .md).html"
+
+  # do the conversion
+  markdown "$markdownF" > "$contentF"
+  xmllint --html --xpath "//h1/text()" "$contentF" > "$headlineF"
+  hxincl -f -x "$templateF" > "$tempF"
+  hxnormalize -e "$tempF" > "$articleF"
+
+  rm "$indexF" > /dev/null
+  cd $htmlD
+  hxmultitoc -s "$(cat "$preampleF")" -e "$(cat "$postampleF")" *.html > "$tempF"
+  cd "$OLDPWD"
+  hxnormalize -e "$tempF" > "$indexF"
+
+  # clean up
+  rm "$headlineF"
+  rm "$contentF"
+  rm "$tempF"
+done
 
 # Unused code for reference
 # markdown --html4tags article.md | recode utf-8..cp1252 > content.html
