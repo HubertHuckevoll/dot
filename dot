@@ -15,6 +15,7 @@ templateD=$projectD"templates/"
 templateF=$templateD"article.html"
 contentF=$templateD"content.html"
 headlineF=$templateD"headline.html"
+summaryF=$templateD"summary.html"
 
 indexF=$htmlD"index.html"
 preampleF=$templateD"preample.html"
@@ -22,7 +23,8 @@ postampleF=$templateD"postample.html"
 
 tempF=$templateD"_temp.html"
 
-if [ -z "${2}" ]; # if var is empty
+# if var is empty
+if [ -z "${2}" ];
 then
   shopt -s nullglob
   markdownFiles=($projectD"md/*")
@@ -30,30 +32,51 @@ else
   markdownFiles+=($projectD"md/"$2)
 fi
 
+# make sure index file is removed before we re-create index
+rm "$indexF" > /dev/null 2>&1
+
+# add preample to index
+cat "$preampleF" > "$tempF"
+
 # loop over markdown files
 for markdownF in $markdownFiles
 do
   # grab current markdown file
   articleF=$htmlD"$(basename "$markdownF" .md).html"
+  dmod=$(date '+%F %T' -d "@$(stat -c '%Y' "$markdownF")")
 
   # do the conversion
   markdown "$markdownF" | xml2asc > "$contentF"
-  xmllint --html --xpath "//h1/text()" "$contentF" > "$headlineF"
-  hxincl -f "$templateF" | xml2asc > "$tempF"
-  hxnormalize -e "$tempF" > "$articleF"
+
+  # extract headline and summary
+  headline="$(xmllint --html --xpath "//h1/text()" "$contentF")"
+  summary="$(xmllint --html --xpath "//p[1]/text()" "$contentF")"
+
+  echo $headline > "$headlineF"
+  echo $summary > "$summaryF"
+
+  # parse template
+  hxincl -f "$templateF" | xml2asc | hxnormalize -e > "$articleF"
+
+  # add to index
+  echo \<li class=\"dotIndexItem\"\> \
+          \<a class=\"dotIndexLink\" href=\"$(basename "$articleF")\"\>\<span class=\"dotIndexHeadline\"\>$headline\<\/span\>\<\/a\> \
+          \<span class=\"dotIndexModified\"\>\($dmod\)\<\/span\>\<br\> \
+          \<span class=\"dotIndexSummary\"\>$summary\<\/span\> \
+       \<\/li\> >> $tempF
 done
 
-# make sure index file is removed before we re-create index
-rm "$indexF" > /dev/null 2>&1
-cd $htmlD
-hxmultitoc -s "$(cat "$preampleF")" -e "$(cat "$postampleF")" *.html > "$tempF"
-cd "$OLDPWD"
+# add postample to index
+cat "$postampleF" >> "$tempF"
+
+# beautify index file
 hxnormalize -e "$tempF" > "$indexF"
 
 # clean up
 rm "$headlineF"
 rm "$contentF"
 rm "$tempF"
+rm "$summaryF"
 
 
 # Unused code for reference
