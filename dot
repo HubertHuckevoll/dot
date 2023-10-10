@@ -1,5 +1,5 @@
 #!/bin/bash
-# a tiny static site generator
+# "dot" - a tiny static site generator
 # needs (sudo apt install ...):
 # libxml2-utils
 # recode
@@ -30,8 +30,10 @@ else
   markdownFiles+=($projectD"md/"$2)
 fi
 
+# loop over markdown files
 for markdownF in $markdownFiles
 do
+  # grab current markdown file
   articleF=$htmlD"$(basename "$markdownF" .md).html"
 
   # do the conversion
@@ -39,18 +41,20 @@ do
   xmllint --html --xpath "//h1/text()" "$contentF" > "$headlineF"
   hxincl -f "$templateF" | xml2asc > "$tempF"
   hxnormalize -e "$tempF" > "$articleF"
-
-  rm "$indexF" > /dev/null 2>&1
-  cd $htmlD
-  hxmultitoc -s "$(cat "$preampleF")" -e "$(cat "$postampleF")" *.html > "$tempF"
-  cd "$OLDPWD"
-  hxnormalize -e "$tempF" > "$indexF"
-
-  # clean up
-  rm "$headlineF"
-  rm "$contentF"
-  rm "$tempF"
 done
+
+# make sure index file is removed before we re-create index
+rm "$indexF" > /dev/null 2>&1
+cd $htmlD
+hxmultitoc -s "$(cat "$preampleF")" -e "$(cat "$postampleF")" *.html > "$tempF"
+cd "$OLDPWD"
+hxnormalize -e "$tempF" > "$indexF"
+
+# clean up
+rm "$headlineF"
+rm "$contentF"
+rm "$tempF"
+
 
 # Unused code for reference
 # markdown --html4tags article.md | recode utf-8..cp1252 > content.html
