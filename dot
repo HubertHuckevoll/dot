@@ -51,64 +51,42 @@ do
   headline="$(echo $content | xmllint --html --xpath "//h1/text()" -)"
   summary="$(echo $content | xmllint --html --xpath "//p[1]/text()" -)"
 
-  # parse template
-  # hxincl -f "$templateF" | xml2asc | hxnormalize -e > "$articleF"
-
-  #awk -v z="$headline" '{gsub(/%HEADLINE%/, z)}1' "$templateF" | \
-  #awk -v z="$dmod"     '{gsub(/%DMOD%/, z)}1' | \
-  #awk -v z="$content"  '{gsub(/%CONTENT%/, z)}1' | \
-  #xml2asc | hxnormalize -e > "$articleF"
-
+  # parse template for article
   awk -v h="$headline" \
       -v d="$dmod" \
       -v c="$content" \
       '{
-          gsub(/%HEADLINE%/,h);
-          gsub(/%DMOD%/,d);
-          gsub(/%CONTENT%/,c);
+          gsub(/\{HEADLINE\}/,h);
+          gsub(/\{DMOD\}/,d);
+          gsub(/\{CONTENT\}/,c);
           print
        }' \
-      "$templateF" | xml2asc | hxnormalize -e > "$articleF"
+      "$templateF" | hxnormalize -e > "$articleF"
 
+  # parse template for index file item
   awk -v h="$headline" \
       -v d="$dmod" \
       -v s="$summary" \
       -v a="$(basename "$articleF")" \
       '{
-          gsub(/%HEADLINE%/,h);
-          gsub(/%DMOD%/,d);
-          gsub(/%SUMMARY%/,s);
-          gsub(/%ARTICLEF%/,a);
+          gsub(/\{HEADLINE\}/,h);
+          gsub(/\{DMOD\}/,d);
+          gsub(/\{SUMMARY\}/,s);
+          gsub(/\{ARTICLEF\}/,a);
           print
        }' \
       "$indexItemF" >> "$tempF"
-
-#  awk -v z="$headline" '{gsub(/%HEADLINE%/, z)}1' "$indexItemF" | \
-#  awk -v z="$dmod"     '{gsub(/%DMOD%/, z)}1' | \
-#  awk -v z="$summary"  '{gsub(/%SUMMARY%/, z)}1' | \
-#  awk -v z="$(basename "$articleF")" '{gsub(/%ARTICLEF%/, z)}1' | \
-#  hxnormalize -e >> "$tempF"
-
-  # add to index
-#  sed -e "s/%ARTICLEF%/$(basename "$articleF")/g" \
-#      -e "s/%DMOD%/$dmod/g" \
-#      -e "s/%SUMMARY%/$summary/g" \
-#      -e "s/%HEADLINE%/$headline/g" \
-#      "$indexItemF" >> "$tempF"
-
 done
 
 # add postample to index
 cat "$postampleF" >> "$tempF"
 
 # beautify index file
-hxnormalize -e "$tempF" > "$indexF"
+# but why is recoding neccessary?
+hxnormalize -e "$tempF" | recode utf-8..cp1252 > "$indexF"
 
 # clean up
-#rm "$headlineF"
-#rm "$contentF"
 rm "$tempF"
-#rm "$summaryF"
 
 
 # Unused code for reference
