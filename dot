@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # "dot" - a tiny static site generator
 # needs (sudo apt install ...):
 # libxml2-utils
@@ -13,17 +14,15 @@ htmlD=$projectD"_published/blog/"
 
 templateD=$projectD"templates/"
 templateF=$templateD"article.html"
-contentF=$templateD"content.html"
-headlineF=$templateD"headline.html"
-summaryF=$templateD"summary.html"
 
 indexF=$htmlD"index.html"
-preampleF=$templateD"preample.html"
-postampleF=$templateD"postample.html"
+preampleF=$templateD"indexPre.html"
+indexItemF=$templateD"indexItem.html"
+postampleF=$templateD"indexPost.html"
 
 tempF=$templateD"_temp.html"
 
-# if var is empty
+# if no article is passed as parameter, do them all
 if [ -z "${2}" ];
 then
   shopt -s nullglob
@@ -46,24 +45,57 @@ do
   dmod=$(date '+%F %T' -d "@$(stat -c '%Y' "$markdownF")")
 
   # do the conversion
-  markdown "$markdownF" | xml2asc > "$contentF"
+  content=$(markdown "$markdownF")
 
   # extract headline and summary
-  headline="$(xmllint --html --xpath "//h1/text()" "$contentF")"
-  summary="$(xmllint --html --xpath "//p[1]/text()" "$contentF")"
-
-  echo $headline > "$headlineF"
-  echo $summary > "$summaryF"
+  headline="$(echo $content | xmllint --html --xpath "//h1/text()" -)"
+  summary="$(echo $content | xmllint --html --xpath "//p[1]/text()" -)"
 
   # parse template
-  hxincl -f "$templateF" | xml2asc | hxnormalize -e > "$articleF"
+  # hxincl -f "$templateF" | xml2asc | hxnormalize -e > "$articleF"
+
+  #awk -v z="$headline" '{gsub(/%HEADLINE%/, z)}1' "$templateF" | \
+  #awk -v z="$dmod"     '{gsub(/%DMOD%/, z)}1' | \
+  #awk -v z="$content"  '{gsub(/%CONTENT%/, z)}1' | \
+  #xml2asc | hxnormalize -e > "$articleF"
+
+  awk -v h="$headline" \
+      -v d="$dmod" \
+      -v c="$content" \
+      '{
+          gsub(/%HEADLINE%/,h);
+          gsub(/%DMOD%/,d);
+          gsub(/%CONTENT%/,c);
+          print
+       }' \
+      "$templateF" | xml2asc | hxnormalize -e > "$articleF"
+
+  awk -v h="$headline" \
+      -v d="$dmod" \
+      -v s="$summary" \
+      -v a="$(basename "$articleF")" \
+      '{
+          gsub(/%HEADLINE%/,h);
+          gsub(/%DMOD%/,d);
+          gsub(/%SUMMARY%/,s);
+          gsub(/%ARTICLEF%/,a);
+          print
+       }' \
+      "$indexItemF" >> "$tempF"
+
+#  awk -v z="$headline" '{gsub(/%HEADLINE%/, z)}1' "$indexItemF" | \
+#  awk -v z="$dmod"     '{gsub(/%DMOD%/, z)}1' | \
+#  awk -v z="$summary"  '{gsub(/%SUMMARY%/, z)}1' | \
+#  awk -v z="$(basename "$articleF")" '{gsub(/%ARTICLEF%/, z)}1' | \
+#  hxnormalize -e >> "$tempF"
 
   # add to index
-  echo \<li class=\"dotIndexItem\"\> \
-          \<a class=\"dotIndexLink\" href=\"$(basename "$articleF")\"\>\<span class=\"dotIndexHeadline\"\>$headline\<\/span\>\<\/a\> \
-          \<span class=\"dotIndexModified\"\>\($dmod\)\<\/span\>\<br\> \
-          \<span class=\"dotIndexSummary\"\>$summary\<\/span\> \
-       \<\/li\> >> $tempF
+#  sed -e "s/%ARTICLEF%/$(basename "$articleF")/g" \
+#      -e "s/%DMOD%/$dmod/g" \
+#      -e "s/%SUMMARY%/$summary/g" \
+#      -e "s/%HEADLINE%/$headline/g" \
+#      "$indexItemF" >> "$tempF"
+
 done
 
 # add postample to index
@@ -73,10 +105,10 @@ cat "$postampleF" >> "$tempF"
 hxnormalize -e "$tempF" > "$indexF"
 
 # clean up
-rm "$headlineF"
-rm "$contentF"
+#rm "$headlineF"
+#rm "$contentF"
 rm "$tempF"
-rm "$summaryF"
+#rm "$summaryF"
 
 
 # Unused code for reference
