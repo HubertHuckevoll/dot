@@ -22,14 +22,9 @@ postampleF=$templateD"indexPost.html"
 
 tempF=$templateD"_temp.html"
 
-# if no article is passed as parameter, do them all
-if [ -z "${2}" ];
-then
-  shopt -s nullglob
-  markdownFiles=($projectD"md/*")
-else
-  markdownFiles+=($projectD"md/"$2)
-fi
+# always do all articles
+shopt -s nullglob
+markdownFiles=($projectD"md/*")
 
 # make sure index file is removed before we re-create index
 rm "$indexF" > /dev/null 2>&1
@@ -54,8 +49,8 @@ do
   content=$(markdown "$markdownF")
 
   # extract headline and summary
-  headline="$(echo $content | xmllint --html --xpath "//h1/text()" -)"
-  summary="$(echo $content | xmllint --html --xpath "//p[1]/text()" -)"
+  headline="$(echo $content | xml2asc| xmllint --html --xpath "//h1/text()" -)"
+  summary="$(echo $content | xml2asc | xmllint --html --xpath "//p[1]/text()" -)"
 
   # parse template for article
   awk -v h="$headline" \
@@ -67,7 +62,7 @@ do
           gsub(/\{CONTENT\}/,c);
           print
        }' \
-      "$templateF" | hxnormalize -e -l 90 > "$articleF"
+      "$templateF" | hxnormalize -e -l 85 > "$articleF"
 
   # parse template for index file item
   if [ $isPage != "_" ]; then
@@ -91,11 +86,10 @@ cat "$postampleF" >> "$tempF"
 
 # beautify index file
 # but why is recoding neccessary?
-hxnormalize -e -l 90 "$tempF" | recode utf-8..cp1252 > "$indexF"
+hxnormalize -e -l 85 "$tempF" > "$indexF"
 
 # clean up
 rm "$tempF"
-
 
 # Unused code for reference
 # markdown --html4tags article.md | recode utf-8..cp1252 > content.html
@@ -104,3 +98,4 @@ rm "$tempF"
 # xmllint --html --format $fname
 # hxmultitoc > index.html
 # "$(date +"%FT%H%M%z").html"
+# if [ -z "${2}" ];
