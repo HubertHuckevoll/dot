@@ -42,9 +42,15 @@ for markdownF in $markdownFiles
 do
   # grab current markdown file
   articleF=$htmlD"$(basename "$markdownF" .md).html"
+
+  # extract first letter for check if file name starts with "_"
+  isPage=$(basename "$markdownF")
+  isPage=${isPage:0:1}
+
+  # grab modification date
   dmod=$(date '+%F %T' -d "@$(stat -c '%Y' "$markdownF")")
 
-  # do the conversion
+  # do the md => html conversion
   content=$(markdown "$markdownF")
 
   # extract headline and summary
@@ -61,21 +67,23 @@ do
           gsub(/\{CONTENT\}/,c);
           print
        }' \
-      "$templateF" | hxnormalize -e > "$articleF"
+      "$templateF" | hxnormalize -e -l 90 > "$articleF"
 
   # parse template for index file item
-  awk -v h="$headline" \
-      -v d="$dmod" \
-      -v s="$summary" \
-      -v a="$(basename "$articleF")" \
-      '{
-          gsub(/\{HEADLINE\}/,h);
-          gsub(/\{DMOD\}/,d);
-          gsub(/\{SUMMARY\}/,s);
-          gsub(/\{ARTICLEF\}/,a);
-          print
-       }' \
-      "$indexItemF" >> "$tempF"
+  if [ $isPage != "_" ]; then
+    awk -v h="$headline" \
+        -v d="$dmod" \
+        -v s="$summary" \
+        -v a="$(basename "$articleF")" \
+        '{
+            gsub(/\{HEADLINE\}/,h);
+            gsub(/\{DMOD\}/,d);
+            gsub(/\{SUMMARY\}/,s);
+            gsub(/\{ARTICLEF\}/,a);
+            print
+        }' \
+        "$indexItemF" >> "$tempF"
+  fi
 done
 
 # add postample to index
@@ -83,7 +91,7 @@ cat "$postampleF" >> "$tempF"
 
 # beautify index file
 # but why is recoding neccessary?
-hxnormalize -e "$tempF" | recode utf-8..cp1252 > "$indexF"
+hxnormalize -e -l 90 "$tempF" | recode utf-8..cp1252 > "$indexF"
 
 # clean up
 rm "$tempF"
