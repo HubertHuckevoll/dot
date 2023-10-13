@@ -10,7 +10,9 @@
 
 # set up variables
 projectD=$1"/"
+mdD=$projectD"md/"
 htmlD=$projectD"_published/blog/"
+markdownFiles=()
 
 templateD=$projectD"templates/"
 templateF=$templateD"article.html"
@@ -22,23 +24,10 @@ postampleF=$templateD"indexPost.html"
 
 tempF=$templateD"_temp.html"
 
-files=()
-cd $projectD"md"
 # Find all .md files, print their modification time and name, sort them, and remove the timestamp
-
 while read -r file; do
-  # Add each filename to the array
-  #echo "$file"
-  files+=("$file")
-done < <(find *.md -type f -name "*.md" -printf "%T@ %p\n" | sort -n | sed 's/^[^ ]* //')
-cd $OLDPWD
-
-# Now you can access the sorted filenames from the array ${files[@]}
-echo "${files[1]}"
-
-# always do all articles
-shopt -s nullglob
-markdownFiles=($projectD"md/*")
+  markdownFiles+=("$file")
+done < <(find $mdD*.md -type f -name "*.md" -printf "%T@ %p\n" | sort -rn | sed 's/^[^ ]* //')
 
 # make sure index file is removed before we re-create index
 rm "$indexF" > /dev/null 2>&1
@@ -47,7 +36,7 @@ rm "$indexF" > /dev/null 2>&1
 cat "$preampleF" > "$tempF"
 
 # loop over markdown files
-for markdownF in $markdownFiles
+for markdownF in "${markdownFiles[@]}"
 do
   # grab current markdown file
   articleF=$htmlD"$(basename "$markdownF" .md).html"
@@ -99,7 +88,6 @@ done
 cat "$postampleF" >> "$tempF"
 
 # beautify index file
-# but why is recoding neccessary?
 hxnormalize -e -l 85 "$tempF" > "$indexF"
 
 # clean up
