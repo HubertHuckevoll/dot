@@ -22,6 +22,20 @@ postampleF=$templateD"indexPost.html"
 
 tempF=$templateD"_temp.html"
 
+files=()
+cd $projectD"md"
+# Find all .md files, print their modification time and name, sort them, and remove the timestamp
+
+while read -r file; do
+  # Add each filename to the array
+  #echo "$file"
+  files+=("$file")
+done < <(find *.md -type f -name "*.md" -printf "%T@ %p\n" | sort -n | sed 's/^[^ ]* //')
+cd $OLDPWD
+
+# Now you can access the sorted filenames from the array ${files[@]}
+echo "${files[1]}"
+
 # always do all articles
 shopt -s nullglob
 markdownFiles=($projectD"md/*")
