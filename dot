@@ -3,9 +3,9 @@
 # "dot" - a tiny static site generator
 # needs (sudo apt install ...):
 # libxml2-utils
-# recode
 # markdown
 # html-xml-utils
+# (recode, optional for retro pages)
 # busybox (for staging server)
 
 # set up variables
@@ -24,19 +24,17 @@ postampleF=$templateD"indexPost.html"
 
 tempF=$templateD"_temp.html"
 
-# Find all .md files, print their modification time and name, sort them, and remove the timestamp
-while read -r file; do
-  markdownFiles+=("$file")
-done < <(find $mdD*.md -type f -name "*.md" -printf "%T@ %p\n" | sort -rn | sed 's/^[^ ]* //')
-
-# make sure index file is removed before we re-create index
-rm "$indexF" > /dev/null 2>&1
+# make sure html folder is clean before we re-create
+rm "$htmlD"*.html > /dev/null 2>&1
 
 # add preample to index
 cat "$preampleF" > "$tempF"
 
+shopt -s nullglob
+markdownFiles=($mdD*.md)
+
 # loop over markdown files
-for markdownF in "${markdownFiles[@]}"
+for markdownF in "${markdownFiles[@]}" #"${markdownFiles[@]}"
 do
   # grab current markdown file
   articleF=$htmlD"$(basename "$markdownF" .md).html"
@@ -45,8 +43,20 @@ do
   isPage=$(basename "$markdownF")
   isPage=${isPage:0:1}
 
-  # grab modification date
-  dmod=$(date '+%F %T' -d "@$(stat -c '%Y' "$markdownF")")
+  # extract date from filename: 2023_09_14_13_30_dot_article_2 or use
+  # current date for "pages"
+  if [ $isPage != "_" ]; then
+    filename=$(basename "$markdownF")
+    date_time=$(echo $filename | sed -E 's/([0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2})_.*/\1/g')
+    year=${date_time:0:4}
+    month=${date_time:5:2}
+    day=${date_time:8:2}
+    hour=${date_time:11:2}
+    minute=${date_time:14:2}
+    dmod=$(date -d "$year-$month-$day $hour:$minute" +"%Y-%m-%d %H:%M:%S")
+  else
+    dmod=$(date '+%F %T' -d "@$(stat -c '%Y' "$markdownF")")
+  fi
 
   # do the md => html conversion
   content=$(markdown "$markdownF")
@@ -57,12 +67,14 @@ do
 
   # parse template for article
   awk -v h="$headline" \
+      -v s="$summary" \
       -v d="$dmod" \
       -v c="$content" \
       '{
-          gsub(/\{HEADLINE\}/,h);
-          gsub(/\{DMOD\}/,d);
-          gsub(/\{CONTENT\}/,c);
+          gsub(/\{\{HEADLINE\}\}/,h);
+          gsub(/\{\{SUMMARY\}\}/,s);
+          gsub(/\{\{DMOD\}\}/,d);
+          gsub(/\{\{CONTENT\}\}/,c);
           print
        }' \
       "$templateF" | hxnormalize -e -l 85 > "$articleF"
@@ -70,14 +82,14 @@ do
   # parse template for index file item
   if [ $isPage != "_" ]; then
     awk -v h="$headline" \
-        -v d="$dmod" \
         -v s="$summary" \
+        -v d="$dmod" \
         -v a="$(basename "$articleF")" \
         '{
-            gsub(/\{HEADLINE\}/,h);
-            gsub(/\{DMOD\}/,d);
-            gsub(/\{SUMMARY\}/,s);
-            gsub(/\{ARTICLEF\}/,a);
+            gsub(/\{\{HEADLINE\}\}/,h);
+            gsub(/\{\{SUMMARY\}\}/,s);
+            gsub(/\{\{DMOD\}\}/,d);
+            gsub(/\{\{ARTICLEF\}\}/,a);
             print
         }' \
         "$indexItemF" >> "$tempF"
@@ -92,12 +104,3 @@ hxnormalize -e -l 85 "$tempF" > "$indexF"
 
 # clean up
 rm "$tempF"
-
-# Unused code for reference
-# markdown --html4tags article.md | recode utf-8..cp1252 > content.html
-# h1=$(hxextract h1 content.html | sed -e 's/<h1>//g' -e 's/<\/h1>//g')
-# sed -i 's/"$h1"//g' content.html
-# xmllint --html --format $fname
-# hxmultitoc > index.html
-# "$(date +"%FT%H%M%z").html"
-# if [ -z "${2}" ];
