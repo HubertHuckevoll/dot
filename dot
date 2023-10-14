@@ -11,7 +11,7 @@
 # set up variables
 projectD=$1"/"
 mdD=$projectD"md/"
-htmlD=$projectD"_published/blog/"
+htmlD=$projectD"_published/"
 markdownFiles=()
 
 templateD=$projectD"templates/"
