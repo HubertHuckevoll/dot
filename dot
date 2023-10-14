@@ -65,9 +65,12 @@ if [ $1 == "build" ]; then
   shopt -s nullglob
   markdownFiles=($mdD*.md)
 
-  # loop over markdown files
-  for markdownF in "${markdownFiles[@]}" #"${markdownFiles[@]}"
+  # loop over markdown files in reverse order:
+  # youngest first
+  for ((idx=${#markdownFiles[@]}-1; idx>=0; idx--));
   do
+    markdownF="${markdownFiles[idx]}"
+
     # grab current markdown file
     articleF=$htmlD"$(basename "$markdownF" .md).html"
 
