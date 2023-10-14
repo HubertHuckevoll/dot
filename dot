@@ -2,7 +2,7 @@
 # "dot" - a tiny static blog generator written with bash and unix tools
 
 # exit on any error
-set -e
+# set -e
 
 # set up folder variables
 projectD=$2"/"
@@ -96,7 +96,7 @@ if [ $1 == "build" ]; then
     content=$(markdown "$markdownF")
 
     # extract headline and summary
-    headline="$(echo $content | xml2asc| xmllint --html --xpath "//h1/text()" -)"
+    headline="$(echo $content | xml2asc| xmllint --html --xpath "//h2[1]/text()" -)"
     summary="$(echo $content | xml2asc | xmllint --html --xpath "//p[1]/text()" -)"
 
     # parse template for article
