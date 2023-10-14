@@ -1,18 +1,25 @@
 #!/bin/bash
 # "dot" - a tiny static blog generator written with bash and unix tools
 
-# set up root depending on parameters
-if [ $1 == "init" ] || [ $1 == "new" ]; then
-  projectD=$2"/"
-else
-  projectD=$1"/"
-fi
-
 # set up folder variables
+projectD=$2"/"
 mdD=$projectD"md/"
 htmlD=$projectD"_published/"
 imgD=$htmlD"images/"
 templateD=$projectD"templates/"
+
+# init a new project structure
+if [ -z "${1}" ]; then
+  echo;
+  echo "[DOT - a tiny static blog generator]"
+  echo;
+  echo "Usage:";
+  echo "./dot init ~/blogname";
+  echo "./dot new ~/blogname articleName";
+  echo "./dot build ~/blogname";
+  echo;
+  exit 0
+fi
 
 # init a new project structure
 if [ $1 == "init" ]; then
@@ -31,96 +38,99 @@ if [ $1 == "new" ]; then
   exit 0
 fi
 
-# build everything
-# set up file variables
-templateF=$templateD"article.html"
-indexF=$htmlD"index.html"
-preampleF=$templateD"indexPre.html"
-indexItemF=$templateD"indexItem.html"
-postampleF=$templateD"indexPost.html"
+# init a new article
+if [ $1 == "build" ]; then
+  # build everything
+  # set up file variables
+  templateF=$templateD"article.html"
+  indexF=$htmlD"index.html"
+  preampleF=$templateD"indexPre.html"
+  indexItemF=$templateD"indexItem.html"
+  postampleF=$templateD"indexPost.html"
 
-tempF=$templateD"_temp.html"
+  tempF=$templateD"_temp.html"
 
-markdownFiles=()
+  markdownFiles=()
 
-# make sure html folder is clean before we re-create
-rm "$htmlD"*.html > /dev/null 2>&1
+  # make sure html folder is clean before we re-create
+  rm "$htmlD"*.html > /dev/null 2>&1
 
-# add preample to index
-cat "$preampleF" > "$tempF"
+  # add preample to index
+  cat "$preampleF" > "$tempF"
 
-# read markdown files
-shopt -s nullglob
-markdownFiles=($mdD*.md)
+  # read markdown files
+  shopt -s nullglob
+  markdownFiles=($mdD*.md)
 
-# loop over markdown files
-for markdownF in "${markdownFiles[@]}" #"${markdownFiles[@]}"
-do
-  # grab current markdown file
-  articleF=$htmlD"$(basename "$markdownF" .md).html"
+  # loop over markdown files
+  for markdownF in "${markdownFiles[@]}" #"${markdownFiles[@]}"
+  do
+    # grab current markdown file
+    articleF=$htmlD"$(basename "$markdownF" .md).html"
 
-  # extract first letter for check if file name starts with "_"
-  isPage=$(basename "$markdownF")
-  isPage=${isPage:0:1}
+    # extract first letter for check if file name starts with "_"
+    isPage=$(basename "$markdownF")
+    isPage=${isPage:0:1}
 
-  # extract date from filename: 2023_09_14_13_30_dot_article_2 or use
-  # current date for "pages"
-  if [ $isPage != "_" ]; then
-    filename=$(basename "$markdownF")
-    date_time=$(echo $filename | sed -E 's/([0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2})_.*/\1/g')
-    year=${date_time:0:4}
-    month=${date_time:5:2}
-    day=${date_time:8:2}
-    hour=${date_time:11:2}
-    minute=${date_time:14:2}
-    dmod=$(date -d "$year-$month-$day $hour:$minute" +"%Y-%m-%d %H:%M:%S")
-  else
-    dmod=$(date '+%F %T' -d "@$(stat -c '%Y' "$markdownF")")
-  fi
+    # extract date from filename: 2023_09_14_13_30_dot_article_2 or use
+    # current date for "pages"
+    if [ $isPage != "_" ]; then
+      filename=$(basename "$markdownF")
+      date_time=$(echo $filename | sed -E 's/([0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2})_.*/\1/g')
+      year=${date_time:0:4}
+      month=${date_time:5:2}
+      day=${date_time:8:2}
+      hour=${date_time:11:2}
+      minute=${date_time:14:2}
+      dmod=$(date -d "$year-$month-$day $hour:$minute" +"%Y-%m-%d %H:%M:%S")
+    else
+      dmod=$(date '+%F %T' -d "@$(stat -c '%Y' "$markdownF")")
+    fi
 
-  # do the md => html conversion
-  content=$(markdown "$markdownF")
+    # do the md => html conversion
+    content=$(markdown "$markdownF")
 
-  # extract headline and summary
-  headline="$(echo $content | xml2asc| xmllint --html --xpath "//h1/text()" -)"
-  summary="$(echo $content | xml2asc | xmllint --html --xpath "//p[1]/text()" -)"
+    # extract headline and summary
+    headline="$(echo $content | xml2asc| xmllint --html --xpath "//h1/text()" -)"
+    summary="$(echo $content | xml2asc | xmllint --html --xpath "//p[1]/text()" -)"
 
-  # parse template for article
-  awk -v h="$headline" \
-      -v s="$summary" \
-      -v d="$dmod" \
-      -v c="$content" \
-      '{
-          gsub(/\{\{HEADLINE\}\}/,h);
-          gsub(/\{\{SUMMARY\}\}/,s);
-          gsub(/\{\{DMOD\}\}/,d);
-          gsub(/\{\{CONTENT\}\}/,c);
-          print
-       }' \
-      "$templateF" | hxnormalize -e -l 85 > "$articleF"
-
-  # parse template for index file item
-  if [ $isPage != "_" ]; then
+    # parse template for article
     awk -v h="$headline" \
         -v s="$summary" \
         -v d="$dmod" \
-        -v a="$(basename "$articleF")" \
+        -v c="$content" \
         '{
             gsub(/\{\{HEADLINE\}\}/,h);
             gsub(/\{\{SUMMARY\}\}/,s);
             gsub(/\{\{DMOD\}\}/,d);
-            gsub(/\{\{ARTICLEF\}\}/,a);
+            gsub(/\{\{CONTENT\}\}/,c);
             print
         }' \
-        "$indexItemF" >> "$tempF"
-  fi
-done
+        "$templateF" | hxnormalize -e -l 85 > "$articleF"
 
-# add postample to index
-cat "$postampleF" >> "$tempF"
+    # parse template for index file item
+    if [ $isPage != "_" ]; then
+      awk -v h="$headline" \
+          -v s="$summary" \
+          -v d="$dmod" \
+          -v a="$(basename "$articleF")" \
+          '{
+              gsub(/\{\{HEADLINE\}\}/,h);
+              gsub(/\{\{SUMMARY\}\}/,s);
+              gsub(/\{\{DMOD\}\}/,d);
+              gsub(/\{\{ARTICLEF\}\}/,a);
+              print
+          }' \
+          "$indexItemF" >> "$tempF"
+    fi
+  done
 
-# beautify index file
-hxnormalize -e -l 85 "$tempF" > "$indexF"
+  # add postample to index
+  cat "$postampleF" >> "$tempF"
 
-# clean up
-rm "$tempF"
+  # beautify index file
+  hxnormalize -e -l 85 "$tempF" > "$indexF"
+
+  # clean up
+  rm "$tempF"
+fi
