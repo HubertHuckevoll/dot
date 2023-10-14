@@ -14,8 +14,8 @@ if [ -z "${1}" ]; then
   echo "[DOT - a tiny static blog generator]"
   echo;
   echo "Usage:";
-  echo "./dot init ~/blogname";
-  echo "./dot new ~/blogname articleName";
+  echo "./dot init  ~/blogname";
+  echo "./dot new   ~/blogname articleName";
   echo "./dot build ~/blogname";
   echo;
   exit 0
