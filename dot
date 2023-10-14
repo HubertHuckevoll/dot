@@ -1,12 +1,5 @@
 #!/bin/bash
-
-# "dot" - a tiny static site generator
-# needs (sudo apt install ...):
-# libxml2-utils
-# markdown
-# html-xml-utils
-# (recode, optional for retro pages)
-# busybox (for staging server)
+# "dot" - a tiny static blog generator writen with bash and unix tools
 
 # set up variables
 projectD=$1"/"
