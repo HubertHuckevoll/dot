@@ -8,7 +8,7 @@ htmlD=$projectD"_published/"
 imgD=$htmlD"images/"
 templateD=$projectD"templates/"
 
-# init a new project structure
+# help
 if [ -z "${1}" ]; then
   echo;
   echo "[DOT - a tiny static blog generator]"
