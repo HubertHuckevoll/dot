@@ -41,9 +41,8 @@ if [ $1 == "new" ]; then
   exit 0
 fi
 
-# init a new article
+# build everything
 if [ $1 == "build" ]; then
-  # build everything
   # set up file variables
   templateF=$templateD"article.html"
   indexF=$htmlD"index.html"
