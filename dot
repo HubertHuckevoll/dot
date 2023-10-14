@@ -1,12 +1,38 @@
 #!/bin/bash
 # "dot" - a tiny static blog generator writen with bash and unix tools
 
-# set up variables
-projectD=$1"/"
+# set up root depending on parameters
+if [ $1 == "init" ] || [ $1 == "new" ]; then
+  projectD=$2"/"
+else
+  projectD=$1"/"
+fi
+
+# set up folder variables
 mdD=$projectD"md/"
 htmlD=$projectD"_published/"
+imgD=$htmlD"images/"
 templateD=$projectD"templates/"
 
+# init a new project structure
+if [ $1 == "init" ]; then
+  mkdir -p "$projectD"
+  mkdir -p "$mdD"
+  mkdir -p "$htmlD"
+  mkdir -p "$imgD"
+  mkdir -p "$templateD"
+  exit 0
+fi
+
+# init a new article
+if [ $1 == "new" ]; then
+  fname="$mdD"$(date +"%Y_%m_%d_%H_%M")_$3".md"
+  touch $fname
+  exit 0
+fi
+
+# build everything
+# set up file variables
 templateF=$templateD"article.html"
 indexF=$htmlD"index.html"
 preampleF=$templateD"indexPre.html"
