@@ -85,9 +85,9 @@ if [ $1 == "build" ]; then
       day=${date_time:8:2}
       hour=${date_time:11:2}
       minute=${date_time:14:2}
-      dmod=$(date -d "$year-$month-$day $hour:$minute" +"%Y-%m-%d %H:%M:%S")
+      dmod=$(date -d "$year-$month-$day $hour:$minute" +"%Y-%m-%d %H:%M")
     else
-      dmod=$(date '+%F %T' -d "@$(stat -c '%Y' "$markdownF")")
+      dmod=$(date -d "@$(stat -c '%Y' "$markdownF")" +"%Y-%m-%d %H:%M")
     fi
 
     # do the md => html conversion
