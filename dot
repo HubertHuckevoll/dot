@@ -1,5 +1,5 @@
 #!/bin/bash
-# "dot" - a tiny static blog generator writen with bash and unix tools
+# "dot" - a tiny static blog generator written with bash and unix tools
 
 # set up root depending on parameters
 if [ $1 == "init" ] || [ $1 == "new" ]; then
