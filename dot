@@ -5,11 +5,9 @@
 projectD=$1"/"
 mdD=$projectD"md/"
 htmlD=$projectD"_published/"
-markdownFiles=()
-
 templateD=$projectD"templates/"
-templateF=$templateD"article.html"
 
+templateF=$templateD"article.html"
 indexF=$htmlD"index.html"
 preampleF=$templateD"indexPre.html"
 indexItemF=$templateD"indexItem.html"
@@ -17,12 +15,15 @@ postampleF=$templateD"indexPost.html"
 
 tempF=$templateD"_temp.html"
 
+markdownFiles=()
+
 # make sure html folder is clean before we re-create
 rm "$htmlD"*.html > /dev/null 2>&1
 
 # add preample to index
 cat "$preampleF" > "$tempF"
 
+# read markdown files
 shopt -s nullglob
 markdownFiles=($mdD*.md)
 
