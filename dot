@@ -1,6 +1,9 @@
 #!/bin/bash
 # "dot" - a tiny static blog generator written with bash and unix tools
 
+# exit on any error
+set -e
+
 # set up folder variables
 projectD=$2"/"
 mdD=$projectD"md/"
