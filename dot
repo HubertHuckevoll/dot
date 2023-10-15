@@ -79,6 +79,7 @@ if [ $1 == "build" ]; then
   for ((idx=${#markdownFiles[@]}-1; idx>=0; idx--));
   do
     markdownF="${markdownFiles[idx]}"
+    echo "Processing '$markdownF'";
 
     # grab current markdown file
     articleF=$htmlD"$(basename "$markdownF" .md).html"
@@ -108,16 +109,23 @@ if [ $1 == "build" ]; then
     # extract headline and summary
     headline="$(echo $content | xml2asc| xmllint --html --xpath "//h2[1]/text()" -)"
     summary="$(echo $content | xml2asc | xmllint --html --xpath "//p[1]/text()" -)"
+    firstImage="$(echo $content | xml2asc | xmllint --html --xpath "string(//img[1]/@src)" -)"
+
+    if [ ! -z "${firstImage}" ]; then
+      firstImage="\"@type\": \"imageObject\", \"url\": \"$firstImage\""
+    fi
 
     # parse template for article
     awk -v h="$headline" \
         -v s="$summary" \
         -v d="$dmod" \
+        -v i="$firstImage" \
         -v c="$content" \
         '{
             gsub(/\{\{HEADLINE\}\}/,h);
             gsub(/\{\{SUMMARY\}\}/,s);
             gsub(/\{\{DMOD\}\}/,d);
+            gsub(/\{\{IMAGE\}\}/,i);
             gsub(/\{\{CONTENT\}\}/,c);
             print
         }' \
@@ -128,11 +136,13 @@ if [ $1 == "build" ]; then
       awk -v h="$headline" \
           -v s="$summary" \
           -v d="$dmod" \
+          -v i="$firstImage" \
           -v a="$(basename "$articleF")" \
           '{
               gsub(/\{\{HEADLINE\}\}/,h);
               gsub(/\{\{SUMMARY\}\}/,s);
               gsub(/\{\{DMOD\}\}/,d);
+              gsub(/\{\{IMAGE\}\}/,i);
               gsub(/\{\{ARTICLEF\}\}/,a);
               print
           }' \
