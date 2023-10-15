@@ -16,15 +16,15 @@ templateSourceD=$scriptD"templates/"
 # set up file variables
 templateFname="article.html"
 indexFname="index.html"
-preampleFname="indexPre.html"
+indexHeaderFname="indexPre.html"
 indexItemFname="indexItem.html"
-postampleFname="indexPost.html"
+indexFooterFname="indexPost.html"
 
 templateF="$templateD""$templateFname"
 indexF="$htmlD""$indexFname"
-preampleF="$templateD""$preampleFname"
+indexHeaderF="$templateD""$indexHeaderFname"
 indexItemF="$templateD""$indexItemFname"
-postampleF="$templateD""$postampleFname"
+indexFooterF="$templateD""$indexFooterFname"
 
 tempF=$templateD"_temp.html"
 
@@ -68,7 +68,7 @@ if [ $1 == "build" ]; then
   rm "$htmlD"*.html > /dev/null 2>&1
 
   # add preample to index
-  cat "$preampleF" > "$tempF"
+  cat "$indexHeaderF" > "$tempF"
 
   # read markdown files
   shopt -s nullglob
@@ -141,7 +141,7 @@ if [ $1 == "build" ]; then
   done
 
   # add postample to index
-  cat "$postampleF" >> "$tempF"
+  cat "$indexFooterF" >> "$tempF"
 
   # beautify index file
   hxnormalize -e -l 85 "$tempF" > "$indexF"
