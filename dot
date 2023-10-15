@@ -5,11 +5,30 @@
 # set -e
 
 # set up folder variables
+scriptD=$(cd `dirname $0` && pwd)"/"
 projectD=$2"/"
 mdD=$projectD"md/"
 htmlD=$projectD"_published/"
 imgD=$htmlD"images/"
 templateD=$projectD"templates/"
+templateSourceD=$scriptD"templates/"
+
+# set up file variables
+templateFname="article.html"
+indexFname="index.html"
+preampleFname="indexPre.html"
+indexItemFname="indexItem.html"
+postampleFname="indexPost.html"
+
+templateF="$templateD""$templateFname"
+indexF="$htmlD""$indexFname"
+preampleF="$templateD""$preampleFname"
+indexItemF="$templateD""$indexItemFname"
+postampleF="$templateD""$postampleFname"
+
+tempF=$templateD"_temp.html"
+
+markdownFiles=()
 
 # help
 if [ -z "${1}" ]; then
@@ -31,6 +50,8 @@ if [ $1 == "init" ]; then
   mkdir -p "$htmlD"
   mkdir -p "$imgD"
   mkdir -p "$templateD"
+
+  cp $templateSourceD*.html $templateD
   exit 0
 fi
 
@@ -43,17 +64,6 @@ fi
 
 # build everything
 if [ $1 == "build" ]; then
-  # set up file variables
-  templateF=$templateD"article.html"
-  indexF=$htmlD"index.html"
-  preampleF=$templateD"indexPre.html"
-  indexItemF=$templateD"indexItem.html"
-  postampleF=$templateD"indexPost.html"
-
-  tempF=$templateD"_temp.html"
-
-  markdownFiles=()
-
   # make sure html folder is clean before we re-create
   rm "$htmlD"*.html > /dev/null 2>&1
 
