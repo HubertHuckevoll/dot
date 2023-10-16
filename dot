@@ -6,25 +6,26 @@
 
 # set up folder variables
 scriptD=$(cd `dirname $0` && pwd)"/"
+templateSourceD=$scriptD"templates/"
+
 projectD=$2"/"
 mdD=$projectD"md/"
 htmlD=$projectD"_published/"
-imgD=$htmlD"images/"
+imgSourceD=$projectD"images/"
+stylesSourceD=$projectD"styles/"
+scriptsSourceD=$projectD"scripts/"
 templateD=$projectD"templates/"
-templateSourceD=$scriptD"templates/"
+
+imgD=$htmlD"images/"
+stylesD=$htmlD"styles/"
+scriptsD=$htmlD"scripts/"
 
 # set up file variables
-templateFname="article.html"
-indexFname="index.html"
-indexHeaderFname="indexPre.html"
-indexItemFname="indexItem.html"
-indexFooterFname="indexPost.html"
-
-templateF="$templateD""$templateFname"
-indexF="$htmlD""$indexFname"
-indexHeaderF="$templateD""$indexHeaderFname"
-indexItemF="$templateD""$indexItemFname"
-indexFooterF="$templateD""$indexFooterFname"
+templateF="$templateD""article.html"
+indexF="$htmlD""index.html"
+indexHeaderF="$templateD""indexPre.html"
+indexItemF="$templateD""indexItem.html"
+indexFooterF="$templateD""indexPost.html"
 
 tempF=$templateD"_temp.html"
 
@@ -49,7 +50,12 @@ if [ $1 == "init" ]; then
   mkdir -p "$mdD"
   mkdir -p "$htmlD"
   mkdir -p "$imgD"
+  mkdir -p "$stylesD"
   mkdir -p "$templateD"
+  mkdir -p "$imgSourceD"
+  mkdir -p "$stylesSourceD"
+  mkdir -p "$scriptsSourceD"
+  mkdir -p "$scriptsD"
 
   cp $templateSourceD*.html $templateD
   exit 0
@@ -155,6 +161,11 @@ if [ $1 == "build" ]; then
 
   # beautify index file
   hxnormalize -e -l 85 "$tempF" > "$indexF"
+
+  # copy images and other files from source to publish
+  sudo rsync -a "$imgSourceD" "$imgD"
+  sudo rsync -a "$stylesSourceD" "$stylesD"
+  sudo rsync -a "$scriptsSourceD" "$scriptsD"
 
   # clean up
   rm "$tempF"
