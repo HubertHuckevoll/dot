@@ -163,6 +163,8 @@ if [ $1 == "build" ]; then
   hxnormalize -e -l 85 "$tempF" > "$indexF"
 
   # copy images and other files from source to publish
+  # adds the ability to process images, styles & scripts
+  # before putting them into the published folder
   sudo rsync -a "$imgSourceD" "$imgD"
   sudo rsync -a "$stylesSourceD" "$stylesD"
   sudo rsync -a "$scriptsSourceD" "$scriptsD"
