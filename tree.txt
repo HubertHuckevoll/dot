@@ -1,0 +1,21 @@
+(default)
+    view
+        templates
+        assets
+            *.jpg
+            *.css
+            *.js
+    data
+        md
+            *.md
+        images
+            *.jpg
+
+_rendered
+    assets
+        *.jpg
+        *.css
+        *.js
+    images
+        *.jpg
+    *.html
