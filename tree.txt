@@ -1,21 +1,30 @@
-(default)
-    view
-        templates
+dot
+    default
+        view
+            templates
+                *.html
+            assets
+                *.jpg
+                *.css
+                *.js
+        data
+            md
+                *.md
+            images
+                *.jpg
+    dot.sh
+
+project
+    _rendered
         assets
             *.jpg
             *.css
             *.js
-    data
-        md
-            *.md
         images
             *.jpg
-
-_rendered
-    assets
-        *.jpg
-        *.css
-        *.js
-    images
-        *.jpg
-    *.html
+        *.html
+    data
+        images
+            *.jpg
+        md
+            *.md
