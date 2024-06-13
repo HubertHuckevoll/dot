@@ -38,3 +38,9 @@ some_project
             *.html
         index.html
     more_dirs
+
+# Calls
+./dot init  ~/project/articles      ; creates "articles.rendered"
+./dot new   ~/project/articles      ; add article by date, use first line as headline
+./dot build ~/project/articles      ; re-create everything in "articles.rendered"
+
