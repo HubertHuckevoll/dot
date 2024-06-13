@@ -2,13 +2,16 @@ dot
     default
         view
             templates
-                *.html
+                articlePage.html
+                indexPageIntro.html
+                indexPageOutro.html
+                indexPageItem.html
             assets
                 *.jpg
                 *.css
                 *.js
         data
-            article1
+            00-00-00T00-00
                 *.html
                 *.jpg
     dot.sh
@@ -28,15 +31,20 @@ project
         index.html
     view
         templates
-            *.html
+                articlePage.html
+                indexPageIntro.html
+                indexPageOutro.html
+                indexPageItem.html
         assets
             *.jpg
             *.css
             *.js
     data
-        article1
+        2024-06-01T18-30
+            *.md
             *.jpg
+            *.zip
+        2024-06-01T18-35-internal
             *.md
-        article2
             *.png
-            *.md
+            *.exe
