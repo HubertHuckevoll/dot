@@ -1,6 +1,6 @@
 dot
-    default
-        view
+    view
+        default
             templates
                 articlePage.html
                 indexPageIntro.html
@@ -10,14 +10,22 @@ dot
                 *.jpg
                 *.css
                 *.js
-        data
-            00-00-00T00-00
-                *.html
-                *.jpg
+        meyerk
     dot.sh
 
-project
-    _rendered
+some_project
+    some_dir
+    other_dir
+    articles
+        2024-06-01T18-30
+            *.md
+            *.jpg
+            *.zip
+        i2024-06-01T18-35
+            *.md
+            *.png
+            *.exe
+    articles.rendered
         assets
             *.jpg
             *.css
@@ -29,22 +37,4 @@ project
             *.png
             *.html
         index.html
-    view
-        templates
-                articlePage.html
-                indexPageIntro.html
-                indexPageOutro.html
-                indexPageItem.html
-        assets
-            *.jpg
-            *.css
-            *.js
-    data
-        2024-06-01T18-30
-            *.md
-            *.jpg
-            *.zip
-        i2024-06-01T18-35
-            *.md
-            *.png
-            *.exe
+    more_dirs
