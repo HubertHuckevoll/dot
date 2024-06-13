@@ -26,17 +26,18 @@ some_project
             *.png
             *.exe
     articles.rendered
-        index.html
         assets
             *.jpg
             *.css
             *.js
-        article1
+        2024-06-01T18-30
+            *.html
             *.jpg
+            *.zip
+        i2024-06-01T18-35
             *.html
-        article2
             *.png
-            *.html
+        index.html
     more_dirs
 
 # Calls
