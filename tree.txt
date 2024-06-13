@@ -26,6 +26,7 @@ some_project
             *.png
             *.exe
     articles.rendered
+        index.html
         assets
             *.jpg
             *.css
@@ -36,11 +37,9 @@ some_project
         article2
             *.png
             *.html
-        index.html
     more_dirs
 
 # Calls
-./dot init  ~/project/articles      ; creates "articles.rendered"
-./dot new   ~/project/articles      ; add article by date, use first line as headline
-./dot build ~/project/articles      ; re-create everything in "articles.rendered"
-
+./dot init  ~/project/articles meyerk      ; creates "articles.rendered"
+./dot new   ~/project/articles meyerk      ; add article by date, use first line as headline
+./dot build ~/project/articles meyerk      ; re-create everything in "articles.rendered"
