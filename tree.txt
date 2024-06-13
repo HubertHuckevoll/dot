@@ -44,7 +44,7 @@ project
             *.md
             *.jpg
             *.zip
-        2024-06-01T18-35-internal
+        i2024-06-01T18-35
             *.md
             *.png
             *.exe
