@@ -42,4 +42,4 @@ some_project
 
 # Calls
 ./dot new   ~/project/articles             ; add article by date, use first line as headline
-./dot build ~/project/articles meyerk      ; re-create everything in "articles.rendered"
+./dot build ~/project/articles meyerk      ; (re-)create "articles.rendered"
