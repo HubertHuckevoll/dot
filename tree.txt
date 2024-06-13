@@ -8,9 +8,8 @@ dot
                 *.css
                 *.js
         data
-            md
-                *.md
-            images
+            article1
+                *.html
                 *.jpg
     dot.sh
 
@@ -20,11 +19,24 @@ project
             *.jpg
             *.css
             *.js
-        images
+        article1
             *.jpg
-        *.html
+            *.html
+        article2
+            *.png
+            *.html
+        index.html
+    view
+        templates
+            *.html
+        assets
+            *.jpg
+            *.css
+            *.js
     data
-        images
+        article1
             *.jpg
-        md
+            *.md
+        article2
+            *.png
             *.md
