@@ -1,11 +1,12 @@
 dot
-    themes
+    theme
         default
             templates
-                articlePage.html
-                indexPageIntro.html
-                indexPageOutro.html
-                indexPageItem.html
+                page.html
+                article.html
+                indexIntro.html
+                indexOutro.html
+                indexItem.html
             assets
                 *.jpg
                 *.css
@@ -32,12 +33,13 @@ meyerk
             article2Name.md
             *.png
             *.exe
-    view
+    theme
         templates
-            articlePage.html
-            indexPageIntro.html
-            indexPageOutro.html
-            indexPageItem.html
+            page.html
+            article.html
+            indexIntro.html
+            indexOutro.html
+            indexItem.html
         assets
             *.jpg
             *.css
