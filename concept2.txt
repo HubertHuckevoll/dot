@@ -14,13 +14,22 @@ dot
 
 
 meyerk
-    articles
-        2024-06-01T18-30
-            *.md
+    pages
+        impressum
+            2024-06-01T18-30.md
             *.jpg
             *.zip
-        i2024-06-01T18-35
-            *.md
+        kontakt
+            2024-06-01T18-35.md
+            *.png
+            *.exe
+    articles
+        2024-06-01T18-30
+            article1Name.md
+            *.jpg
+            *.zip
+        2024-06-01T18-35
+            article2Name.md
             *.png
             *.exe
     view
@@ -48,9 +57,10 @@ meyerk
         index.html
 
 # Calls
-./dot   init    ~/meyerk                  ; init project folder, copy "default" theme
-./dot   new     ~/meyerk articleName      ; add article with date as folder name, articleName as filename
-./dot   build   ~/meyerk                  ; (re-)create meyerk/rendered
-./dot   theme   ~/meyerk newTheme         ; copy theme from themes folder in dot/themes, forces build
+./dot   init        ~/meyerk                  ; init project folder, copy "default" theme
+./dot   article     ~/meyerk articleName      ; add article with date as folder name, articleName as filename
+./dot   page        ~/meyerk pageName         ; add article with name as folder name, date as filename
+./dot   build       ~/meyerk                  ; (re-)create meyerk/rendered
+./dot   theme       ~/meyerk newTheme         ; copy theme from themes folder in dot/themes, forces build
 
 
