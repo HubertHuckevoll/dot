@@ -1,0 +1,56 @@
+dot
+    themes
+        default
+            templates
+                articlePage.html
+                indexPageIntro.html
+                indexPageOutro.html
+                indexPageItem.html
+            assets
+                *.jpg
+                *.css
+                *.js
+    dot.sh
+
+
+meyerk
+    articles
+        2024-06-01T18-30
+            *.md
+            *.jpg
+            *.zip
+        i2024-06-01T18-35
+            *.md
+            *.png
+            *.exe
+    view
+        templates
+            articlePage.html
+            indexPageIntro.html
+            indexPageOutro.html
+            indexPageItem.html
+        assets
+            *.jpg
+            *.css
+            *.js
+    rendered
+        assets
+            *.jpg
+            *.css
+            *.js
+        2024-06-01T18-30
+            *.html
+            *.jpg
+            *.zip
+        i2024-06-01T18-35
+            *.html
+            *.png
+        index.html
+
+# Calls
+./dot   init    ~/meyerk                  ; init project folder, copy "default" theme
+./dot   new     ~/meyerk articleName      ; add article with date as folder name, articleName as filename
+./dot   build   ~/meyerk                  ; (re-)create meyerk/rendered
+./dot   theme   ~/meyerk newTheme         ; copy theme from themes folder in dot/themes, forces build
+
+
