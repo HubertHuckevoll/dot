@@ -1,5 +1,5 @@
 dot
-    theme
+    frontend
         default
             templates
                 page.html
@@ -15,15 +15,6 @@ dot
 
 
 meyerk
-    pages
-        impressum
-            2024-06-01T18-30.md
-            *.jpg
-            *.zip
-        kontakt
-            2024-06-01T18-35.md
-            *.png
-            *.exe
     articles
         2024-06-01T18-30
             article1Name.md
@@ -33,7 +24,7 @@ meyerk
             article2Name.md
             *.png
             *.exe
-    theme
+    frontend
         templates
             page.html
             article.html
@@ -44,25 +35,44 @@ meyerk
             *.jpg
             *.css
             *.js
-    rendered
-        assets
+    pages
+        impressum
+            impressum.md
             *.jpg
-            *.css
-            *.js
-        2024-06-01T18-30
-            *.html
-            *.jpg
-            *.zip
-        i2024-06-01T18-35
-            *.html
+            *.gif
+        kontakt
+            konakt.md
             *.png
+    rendered
+        dot
+            assets
+                *.jpg
+                *.css
+                *.js
+            articles
+                2024-06-01T18-30
+                    article1name.html
+                    *.jpg
+                    *.zip
+                2024-06-01T18-35
+                    article2name.html
+                    *.png
+            pages
+                impressum
+                    impressum.html
+                    *.jpg
+                    *.gif
+                kontakt
+                    kontakt.html
+                    *.png
         index.html
 
 # Calls
 ./dot   init        ~/meyerk                  ; init project folder, copy "default" theme
 ./dot   article     ~/meyerk articleName      ; add article with date as folder name, articleName as filename
-./dot   page        ~/meyerk pageName         ; add article with name as folder name, date as filename
-./dot   build       ~/meyerk                  ; (re-)create meyerk/rendered
+./dot   page        ~/meyerk pageName         ; add page with pageName as folder name, pageName as filename
+./dot   build       ~/meyerk                  ; (re-)create "rendered"
 ./dot   theme       ~/meyerk newTheme         ; copy theme from themes folder in dot/themes, forces build
 
-
+Features:
+- creates a scaled down version of images and wraps images in a "picture" set
