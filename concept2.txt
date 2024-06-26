@@ -1,4 +1,10 @@
 dot
+    lib
+        readers
+            md.php
+            bb.php
+            xml.php
+        *.php
     frontend
         theme
             default
@@ -20,6 +26,7 @@ dot
             gallery.js
         js.project
             main.js
+    dot.php
     dot.sh
 
 
