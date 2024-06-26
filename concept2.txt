@@ -1,53 +1,78 @@
 dot
     frontend
-        default
-            templates
-                page.html
-                article.html
-                indexIntro.html
-                indexOutro.html
-                indexItem.html
-            assets
-                *.jpg
-                *.css
-                *.js
+        theme
+            default
+                templates
+                    page.html
+                    article.html
+                    indexIntro.html
+                    indexOutro.html
+                    indexItem.html
+                assets
+                    *.jpg
+                    *.png
+                    *.pdf
+                css
+                    layout.css
+                    skin.css
+        js.lib
+            formo.js
+            gallery.js
+        js.project
+            main.js
     dot.sh
 
 
 meyerk
-    articles
-        2024-06-01T18-30
-            article1Name.md
-            *.jpg
-            *.zip
-        2024-06-01T18-35
-            article2Name.md
-            *.png
-            *.exe
     frontend
-        templates
-            page.html
-            article.html
-            indexIntro.html
-            indexOutro.html
-            indexItem.html
-        assets
-            *.jpg
-            *.css
-            *.js
-    pages
-        impressum
-            impressum.md
-            *.jpg
-            *.gif
-        kontakt
-            konakt.md
-            *.png
+        theme
+            default
+                templates
+                    page.html
+                    article.html
+                    indexIntro.html
+                    indexOutro.html
+                    indexItem.html
+                assets
+                    *.jpg
+                    *.png
+                    *.pdf
+                css
+                    layout.css
+                    skin.css
+        js.lib
+            formo.js
+            gallery.js
+        js.project
+            main.js
+    data
+        articles
+            2024-06-01T18-30
+                article1Name.md
+                *.jpg
+                *.zip
+            2024-06-01T18-35
+                article2Name.md
+                *.png
+                *.exe
+        pages
+            impressum
+                impressum.md
+                *.jpg
+                *.gif
+            kontakt
+                konakt.md
+                *.png
     rendered
         dot
             assets
                 *.jpg
+                *.png
+            css
                 *.css
+            js.lib
+                *.js
+            js.project
                 *.js
             articles
                 2024-06-01T18-30
