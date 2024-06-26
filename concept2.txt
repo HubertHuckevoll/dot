@@ -26,6 +26,7 @@ dot
             gallery.js
         js.project
             main.js
+    loader.php
     dot.php
     dot.sh
 
