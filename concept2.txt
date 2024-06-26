@@ -106,7 +106,7 @@ meyerk
 ./dot   page        ~/meyerk pageName         ; add page with pageName as folder name, pageName as filename
 ./dot   build       ~/meyerk                  ; (re-)create "rendered"
 ./dot   theme       ~/meyerk newTheme         ; copy theme from themes folder in dot/themes, forces build
-./dot   js          ~/meyerk                  ; update all the built-in js by copying js.lib anew, not touching js.project
+./dot   update      ~/meyerk                  ; update all the built-in js by copying js.lib anew, not touching js.project
 
 Features:
 - creates a scaled down version of images and wraps images in a "picture" set
