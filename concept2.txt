@@ -64,31 +64,30 @@ meyerk
                 konakt.md
                 *.png
     rendered
-        dot
-            frontend
-                assets
-                    *.jpg
-                    *.png
-                css
-                    *.css
-                js
-                    *.js
-            articles
-                2024-06-01T18-30
-                    article1name.html
-                    *.jpg
-                    *.zip
-                2024-06-01T18-35
-                    article2name.html
-                    *.png
-            pages
-                impressum
-                    impressum.html
-                    *.jpg
-                    *.gif
-                kontakt
-                    kontakt.html
-                    *.png
+        frontend
+            assets
+                *.jpg
+                *.png
+            css
+                *.css
+            js
+                *.js
+        articles
+            2024-06-01T18-30
+                article1name.html
+                *.jpg
+                *.zip
+            2024-06-01T18-35
+                article2name.html
+                *.png
+        pages
+            impressum
+                impressum.html
+                *.jpg
+                *.gif
+            kontakt
+                kontakt.html
+                *.png
         index.html
 
 # Calls
