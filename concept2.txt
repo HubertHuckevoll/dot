@@ -92,10 +92,10 @@ meyerk
 
 # Calls
 ./dot   init        ~/meyerk                  ; init project folder, copy "default" theme
-./dot   article     ~/meyerk articleName      ; add article with date as folder name, articleName as filename
-./dot   page        ~/meyerk pageName         ; add page with pageName as folder name, pageName as filename
+./dot   article     ~/meyerk articleName      ; add article with date as folder name, articleName as filename, build
+./dot   page        ~/meyerk pageName         ; add page with pageName as folder name, pageName as filename, build
 ./dot   build       ~/meyerk                  ; (re-)create "rendered"
-./dot   theme       ~/meyerk newTheme         ; copy theme from themes folder in dot/themes, forces build
+./dot   theme       ~/meyerk newTheme         ; copy theme from themes folder in dot/themes, build
 
 Features:
 - create a scaled down version of images and wrap images in a "picture" set
