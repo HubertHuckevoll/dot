@@ -5,54 +5,46 @@ dot
             bb.php
             xml.php
         *.php
-    frontend
+    template
         theme
             default
-                templates
+                html
                     page.html
                     article.html
                     indexIntro.html
                     indexOutro.html
                     indexItem.html
+                css
+                    layout.css
+                    skin.css
                 assets
                     *.jpg
                     *.png
                     *.pdf
-                css
-                    layout.css
-                    skin.css
-        js.lib
-            formo.js
-            gallery.js
-        js.project
-            main.js
-    loader.php
+        main.js
+    autoload.php
     dot.php
     dot.sh
-
 
 meyerk
     frontend
         theme
             default
-                templates
+                html
                     page.html
                     article.html
                     indexIntro.html
                     indexOutro.html
                     indexItem.html
+                css
+                    layout.css
+                    skin.css
                 assets
                     *.jpg
                     *.png
                     *.pdf
-                css
-                    layout.css
-                    skin.css
-        js.lib
-            formo.js
-            gallery.js
-        js.project
-            main.js
+        main.js
+        other.js
     data
         articles
             2024-06-01T18-30
@@ -73,15 +65,14 @@ meyerk
                 *.png
     rendered
         dot
-            assets
-                *.jpg
-                *.png
-            css
-                *.css
-            js.lib
-                *.js
-            js.project
-                *.js
+            frontend
+                assets
+                    *.jpg
+                    *.png
+                css
+                    *.css
+                js
+                    *.js
             articles
                 2024-06-01T18-30
                     article1name.html
@@ -106,7 +97,7 @@ meyerk
 ./dot   page        ~/meyerk pageName         ; add page with pageName as folder name, pageName as filename
 ./dot   build       ~/meyerk                  ; (re-)create "rendered"
 ./dot   theme       ~/meyerk newTheme         ; copy theme from themes folder in dot/themes, forces build
-./dot   update      ~/meyerk                  ; update all the built-in js by copying js.lib anew, not touching js.project
 
 Features:
-- creates a scaled down version of images and wraps images in a "picture" set
+- create a scaled down version of images and wrap images in a "picture" set
+- what about custom tags (see CBM)
