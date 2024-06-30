@@ -5,46 +5,63 @@ dot
             bb.php
             xml.php
         *.php
-    template
-        theme
-            default
-                html
-                    page.html
-                    article.html
-                    indexIntro.html
-                    indexOutro.html
-                    indexItem.html
-                css
-                    layout.css
-                    skin.css
-                assets
+    project.template
+        frontend
+            html
+                page.html
+                article.html
+                indexIntro.html
+                indexOutro.html
+                indexItem.html
+            css
+                layout.css
+                skin.css
+            js
+                main.js
+            assets
+                *.jpg
+                *.png
+                *.pdf
+        data
+            articles
+                2024-06-01T18-30
+                    demoArticle.md
                     *.jpg
-                    *.png
-                    *.pdf
-        main.js
+                    *.zip
+            pages
+                impressum
+                    impressum.md
+                    *.jpg
+                    *.gif
+        rendered
+            frontend
+                assets
+                css
+                js
+            articles
+            pages
     autoload.php
     dot.php
     dot.sh
 
 meyerk
     frontend
-        theme
-            default
-                html
-                    page.html
-                    article.html
-                    indexIntro.html
-                    indexOutro.html
-                    indexItem.html
-                css
-                    layout.css
-                    skin.css
-                assets
-                    *.jpg
-                    *.png
-                    *.pdf
-        main.js
-        other.js
+        html
+            page.html
+            article.html
+            indexIntro.html
+            indexOutro.html
+            indexItem.html
+        css
+            layout.css
+            skin.css
+        js
+            main.js
+            other.js
+        assets
+            *.jpg
+            *.png
+            *.pdf
     data
         articles
             2024-06-01T18-30
@@ -91,11 +108,10 @@ meyerk
         index.html
 
 # Calls
-./dot   init        ~/meyerk                  ; init project folder, copy "default" theme
+./dot   init        ~/meyerk                  ; init project folder
 ./dot   article     ~/meyerk articleName      ; add article with date as folder name, articleName as filename, build
 ./dot   page        ~/meyerk pageName         ; add page with pageName as folder name, pageName as filename, build
 ./dot   build       ~/meyerk                  ; (re-)create "rendered"
-./dot   theme       ~/meyerk newTheme         ; copy theme from themes folder in dot/themes, build
 
 Features:
 - create a scaled down version of images and wrap images in a "picture" set
