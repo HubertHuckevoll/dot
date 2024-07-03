@@ -15,6 +15,7 @@ pageD=$projectD"data/pages/"
 
 articleHtmlD=$projectD"_rendered/articles/"
 pageHtmlD=$projectD"_rendered/pages/"
+htmlD=$projectD"_rendered/"
 imgSourceD=$htmlD"assets/"
 stylesSourceD=$htmlD"css/"
 scriptsSourceD=$htmlD"js/"
