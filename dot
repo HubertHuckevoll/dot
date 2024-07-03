@@ -6,15 +6,18 @@
 
 # set up folder variables
 scriptD=$(cd `dirname $0` && pwd)"/"
-templateSourceD=$scriptD"templates/"
+templateSourceD=$scriptD"project.template/"
 
 projectD=$2"/"
-mdD=$projectD"md/"
-htmlD=$projectD"_published/"
-imgSourceD=$projectD"images/"
-stylesSourceD=$projectD"styles/"
-scriptsSourceD=$projectD"scripts/"
-templateD=$projectD"templates/"
+templateD=$projectD"frontend/html/"
+articleD=$projectD"data/articles/"
+pageD=$projectD"data/pages/"
+
+articleHtmlD=$projectD"_rendered/articles/"
+pageHtmlD=$projectD"_rendered/pages/"
+imgSourceD=$htmlD"assets/"
+stylesSourceD=$htmlD"css/"
+scriptsSourceD=$htmlD"js/"
 
 imgD=$htmlD"images/"
 stylesD=$htmlD"styles/"
@@ -47,70 +50,68 @@ fi
 # init a new project structure
 if [ $1 == "init" ]; then
   mkdir -p "$projectD"
-  mkdir -p "$mdD"
-  mkdir -p "$htmlD"
-  mkdir -p "$imgD"
-  mkdir -p "$stylesD"
-  mkdir -p "$templateD"
-  mkdir -p "$imgSourceD"
-  mkdir -p "$stylesSourceD"
-  mkdir -p "$scriptsSourceD"
-  mkdir -p "$scriptsD"
-
-  cp $templateSourceD*.html $templateD
+  cp -r $templateSourceD* $projectD
   exit 0
 fi
 
 # init a new article
 if [ $1 == "new" ]; then
-  fname="$mdD"$(date +"%Y_%m_%d_%H_%M")_$3".md"
-  touch $fname
+  dirN="$articleD"$(date +"%Y_%m_%d_%H_%M")
+  mkdir -p "$dirN"
+  touch "$dirN"/$3".md"
   exit 0
 fi
 
 # build everything
 if [ $1 == "build" ]; then
   # make sure html folder is clean before we re-create
-  rm "$htmlD"*.html > /dev/null 2>&1
+  rm -r "$articleHtmlD"*.html > /dev/null 2>&1
+  rm -r "$pageHtmlD"*.html > /dev/null 2>&1
 
   # add preample to index
   cat "$indexHeaderF" > "$tempF"
 
-  # read markdown files
+  # read article folders
   shopt -s nullglob
-  markdownFiles=($mdD*.md)
+  articleFolders=($articleD*)
 
-  # loop over markdown files in reverse order:
+  # loop over article folders in reverse order:
   # youngest first
-  for ((idx=${#markdownFiles[@]}-1; idx>=0; idx--));
+  for ((idx=${#articleFolders[@]}-1; idx>=0; idx--));
   do
-    markdownF="${markdownFiles[idx]}"
-    echo "Processing '$markdownF'";
+    curArtD="${articleFolders[idx]}/"
+    markdownFiles=($curArtD*.md)
+    artMdF="${markdownFiles[0]}"
+    echo "Processing '$artMdF'";
 
-    # grab current markdown file
-    articleF=$htmlD"$(basename "$markdownF" .md).html"
+    curArticleHtmlD=$articleHtmlD$(basename "$curArtD")/
+    mkdir -p $curArticleHtmlD
 
-    # extract first letter for check if file name starts with "_"
-    isPage=$(basename "$markdownF")
-    isPage=${isPage:0:1}
+    articleF=$curArticleHtmlD"$(basename "$artMdF" .md).html"
+    echo "Processing '$articleF'";
 
-    # extract date from filename: 2023_09_14_13_30_dot_article_2 or use
-    # current date for "pages"
-    if [ $isPage != "_" ]; then
-      filename=$(basename "$markdownF")
-      date_time=$(echo $filename | sed -E 's/([0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2})_.*/\1/g')
-      year=${date_time:0:4}
-      month=${date_time:5:2}
-      day=${date_time:8:2}
-      hour=${date_time:11:2}
-      minute=${date_time:14:2}
-      dmod=$(date -d "$year-$month-$day $hour:$minute" +"%Y-%m-%d %H:%M")
-    else
-      dmod=$(date -d "@$(stat -c '%Y' "$markdownF")" +"%Y-%m-%d %H:%M")
-    fi
-
+#
+#    # extract first letter for check if file name starts with "_"
+#    isPage=$(basename "$markdownF")
+#    isPage=${isPage:0:1}
+#
+#    # extract date from filename: 2023_09_14_13_30_dot_article_2 or use
+#    # current date for "pages"
+#    if [ $isPage != "_" ]; then
+#      filename=$(basename "$markdownF")
+#      date_time=$(echo $filename | sed -E 's/([0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2})_.*/\1/g')
+#      year=${date_time:0:4}
+#      month=${date_time:5:2}
+#      day=${date_time:8:2}
+#      hour=${date_time:11:2}
+#      minute=${date_time:14:2}
+#      dmod=$(date -d "$year-$month-$day $hour:$minute" +"%Y-%m-%d %H:%M")
+#    else
+#      dmod=$(date -d "@$(stat -c '%Y' "$markdownF")" +"%Y-%m-%d %H:%M")
+#    fi
+#
     # do the md => html conversion
-    content=$(markdown "$markdownF")
+    content=$(markdown "$artMdF")
 
     # extract headline and summary
     headline="$(echo $content | xml2asc| xmllint --html --xpath "//h2[1]/text()" -)"
@@ -165,9 +166,9 @@ if [ $1 == "build" ]; then
   # copy images and other files from source to publish
   # adds the ability to process images, styles & scripts
   # before putting them into the published folder
-  sudo rsync -a "$imgSourceD" "$imgD"
-  sudo rsync -a "$stylesSourceD" "$stylesD"
-  sudo rsync -a "$scriptsSourceD" "$scriptsD"
+  # sudo rsync -a "$imgSourceD" "$imgD"
+  # sudo rsync -a "$stylesSourceD" "$stylesD"
+  # sudo rsync -a "$scriptsSourceD" "$scriptsD"
 
   # clean up
   rm "$tempF"
