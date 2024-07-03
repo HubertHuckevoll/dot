@@ -140,7 +140,7 @@ if [ $1 == "build" ]; then
         "$templateF" | hxnormalize -e -l 85 > "$articleF"
 
     # parse template for index file item
-    if [ $isPage != "_" ]; then
+    # if [ $isPage != "_" ]; then
       awk -v h="$headline" \
           -v s="$summary" \
           -v d="$dmod" \
@@ -155,7 +155,7 @@ if [ $1 == "build" ]; then
               print
           }' \
           "$indexItemF" >> "$tempF"
-    fi
+    # fi
   done
 
   # add postample to index
