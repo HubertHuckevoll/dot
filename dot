@@ -72,8 +72,10 @@ if [ $1 == "build" ]; then
   # add preample to index
   cat "$indexHeaderF" > "$tempF"
 
-  # read article folders
+  # set extended options
   shopt -s nullglob
+
+  # read article folders
   articleFolders=($articleD*)
 
   # loop over article folders in reverse order:
@@ -86,7 +88,9 @@ if [ $1 == "build" ]; then
     echo "Processing '$artMdF'";
 
     curArticleHtmlD=$articleHtmlD$(basename "$curArtD")/
-    mkdir -p $curArticleHtmlD
+    mkdir -p "$curArticleHtmlD"
+    cp "$curArtD"* "$curArticleHtmlD"
+    rm $curArticleHtmlD$(basename "$artMdF")
 
     articleF=$curArticleHtmlD"$(basename "$artMdF" .md).html"
     echo "Processing '$articleF'";
