@@ -1,5 +1,5 @@
 #!/bin/bash
-# "dot" - a tiny static blog generator written with bash and unix tools
+# "dot" - a tiny static site generator written with bash and unix tools
 
 # exit on any error
 # set -e
@@ -25,7 +25,8 @@ stylesD=$htmlD"styles/"
 scriptsD=$htmlD"scripts/"
 
 # set up file variables
-templateF="$templateD""article.html"
+articleTemplateF="$templateD""article.html"
+pageTemplateF="$templateD""page.html"
 indexF="$htmlD""index.html"
 indexHeaderF="$templateD""indexPre.html"
 indexItemF="$templateD""indexItem.html"
@@ -38,12 +39,13 @@ markdownFiles=()
 # help
 if [ -z "${1}" ]; then
   echo;
-  echo "[DOT - a tiny static blog generator]"
+  echo "[DOT - a tiny static site generator]"
   echo;
   echo "Usage:";
-  echo "./dot init  ~/blogname";
-  echo "./dot new   ~/blogname articleName";
-  echo "./dot build ~/blogname";
+  echo "./dot init    ~/blogname";
+  echo "./dot article ~/blogname articleName";
+  echo "./dot page    ~/blogname pageName";
+  echo "./dot build   ~/blogname";
   echo;
   exit 0
 fi
@@ -56,8 +58,16 @@ if [ $1 == "init" ]; then
 fi
 
 # init a new article
-if [ $1 == "new" ]; then
+if [ $1 == "article" ]; then
   dirN="$articleD"$(date +"%Y_%m_%d_%H_%M")
+  mkdir -p "$dirN"
+  touch "$dirN"/$3".md"
+  exit 0
+fi
+
+# init a new article
+if [ $1 == "page" ]; then
+  dirN="$pageD"/$3
   mkdir -p "$dirN"
   touch "$dirN"/$3".md"
   exit 0
@@ -65,9 +75,13 @@ fi
 
 # build everything
 if [ $1 == "build" ]; then
+
+  #
+  # build articles first
+  #
+
   # make sure html folder is clean before we re-create
   rm -r "$articleHtmlD"*.html > /dev/null 2>&1
-  rm -r "$pageHtmlD"*.html > /dev/null 2>&1
 
   # add preample to index
   cat "$indexHeaderF" > "$tempF"
@@ -85,7 +99,7 @@ if [ $1 == "build" ]; then
     curArtD="${articleFolders[idx]}/"
     markdownFiles=($curArtD*.md)
     artMdF="${markdownFiles[0]}"
-    echo "Processing '$artMdF'";
+    echo "Markdown '$artMdF'";
 
     curArticleHtmlD=$articleHtmlD$(basename "$curArtD")/
     mkdir -p "$curArticleHtmlD"
@@ -93,28 +107,17 @@ if [ $1 == "build" ]; then
     rm $curArticleHtmlD$(basename "$artMdF")
 
     articleF=$curArticleHtmlD"$(basename "$artMdF" .md).html"
-    echo "Processing '$articleF'";
+    echo "HTML '$articleF'";
 
-#
-#    # extract first letter for check if file name starts with "_"
-#    isPage=$(basename "$markdownF")
-#    isPage=${isPage:0:1}
-#
-#    # extract date from filename: 2023_09_14_13_30_dot_article_2 or use
-#    # current date for "pages"
-#    if [ $isPage != "_" ]; then
-#      filename=$(basename "$markdownF")
-#      date_time=$(echo $filename | sed -E 's/([0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2})_.*/\1/g')
-#      year=${date_time:0:4}
-#      month=${date_time:5:2}
-#      day=${date_time:8:2}
-#      hour=${date_time:11:2}
-#      minute=${date_time:14:2}
-#      dmod=$(date -d "$year-$month-$day $hour:$minute" +"%Y-%m-%d %H:%M")
-#    else
-#      dmod=$(date -d "@$(stat -c '%Y' "$markdownF")" +"%Y-%m-%d %H:%M")
-#    fi
-#
+    filename=$(basename "$curArtD")
+    date_time=$(echo $filename | sed -E 's/([0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2})/\1/g')
+    year=${date_time:0:4}
+    month=${date_time:5:2}
+    day=${date_time:8:2}
+    hour=${date_time:11:2}
+    minute=${date_time:14:2}
+    dmod=$(date -d "$year-$month-$day $hour:$minute" +"%Y-%m-%d %H:%M")
+
     # do the md => html conversion
     content=$(markdown "$artMdF")
 
@@ -141,25 +144,23 @@ if [ $1 == "build" ]; then
             gsub(/\{\{CONTENT\}\}/,c);
             print
         }' \
-        "$templateF" | hxnormalize -e -l 85 > "$articleF"
+        "$articleTemplateF" | hxnormalize -e -l 85 > "$articleF"
 
     # parse template for index file item
-    # if [ $isPage != "_" ]; then
-      awk -v h="$headline" \
-          -v s="$summary" \
-          -v d="$dmod" \
-          -v i="$firstImage" \
-          -v a="$(basename "$articleF")" \
-          '{
-              gsub(/\{\{HEADLINE\}\}/,h);
-              gsub(/\{\{SUMMARY\}\}/,s);
-              gsub(/\{\{DMOD\}\}/,d);
-              gsub(/\{\{IMAGE\}\}/,i);
-              gsub(/\{\{ARTICLEF\}\}/,a);
-              print
-          }' \
-          "$indexItemF" >> "$tempF"
-    # fi
+    awk -v h="$headline" \
+        -v s="$summary" \
+        -v d="$dmod" \
+        -v i="$firstImage" \
+        -v a="/articles/$(basename "$curArtD")/$(basename "$articleF")" \
+        '{
+            gsub(/\{\{HEADLINE\}\}/,h);
+            gsub(/\{\{SUMMARY\}\}/,s);
+            gsub(/\{\{DMOD\}\}/,d);
+            gsub(/\{\{IMAGE\}\}/,i);
+            gsub(/\{\{ARTICLEF\}\}/,a);
+            print
+        }' \
+        "$indexItemF" >> "$tempF"
   done
 
   # add postample to index
@@ -168,6 +169,75 @@ if [ $1 == "build" ]; then
   # beautify index file
   hxnormalize -e -l 85 "$tempF" > "$indexF"
 
+  # clean up
+  rm "$tempF"
+
+  #
+  #
+  # build pages second
+  #
+  #
+
+  # clean pages folder
+  rm -r "$pageHtmlD"*.html > /dev/null 2>&1
+
+  # set extended options
+  # read article folders
+  shopt -s nullglob
+  pageFolders=($pageD*)
+
+  # loop over pages folders
+  for ((idx=${#pageFolders[@]}-1; idx>=0; idx--));
+  do
+    curArtD="${pageFolders[idx]}/"
+    markdownFiles=($curArtD*.md)
+    artMdF="${markdownFiles[0]}"
+    echo "Markdown '$artMdF'";
+
+    curArticleHtmlD=$pageHtmlD$(basename "$curArtD")/
+    mkdir -p "$curArticleHtmlD"
+    cp "$curArtD"* "$curArticleHtmlD"
+    rm $curArticleHtmlD$(basename "$artMdF")
+
+    articleF=$curArticleHtmlD"$(basename "$artMdF" .md).html"
+    echo "HTML '$articleF'";
+
+    # grab current date
+    dmod=$(date -d "@$(stat -c '%Y' "$artMdF")" +"%Y-%m-%d %H:%M")
+
+    # do the md => html conversion
+    content=$(markdown "$artMdF")
+
+    # extract headline and summary
+    headline="$(echo $content | xml2asc| xmllint --html --xpath "//h2[1]/text()" -)"
+    summary="$(echo $content | xml2asc | xmllint --html --xpath "//p[1]/text()" -)"
+    firstImage="$(echo $content | xml2asc | xmllint --html --xpath "string(//img[1]/@src)" -)"
+
+    if [ ! -z "${firstImage}" ]; then
+      firstImage="\"@type\": \"imageObject\", \"url\": \"$firstImage\""
+    fi
+
+    # parse template for article
+    awk -v h="$headline" \
+        -v s="$summary" \
+        -v d="$dmod" \
+        -v i="$firstImage" \
+        -v c="$content" \
+        '{
+            gsub(/\{\{HEADLINE\}\}/,h);
+            gsub(/\{\{SUMMARY\}\}/,s);
+            gsub(/\{\{DMOD\}\}/,d);
+            gsub(/\{\{IMAGE\}\}/,i);
+            gsub(/\{\{CONTENT\}\}/,c);
+            print
+        }' \
+        "$pageTemplateF" | hxnormalize -e -l 85 > "$articleF"
+  done
+
+  #
+  # copy static assets, js, css...
+  #
+
   # copy images and other files from source to publish
   # adds the ability to process images, styles & scripts
   # before putting them into the published folder
@@ -175,6 +245,4 @@ if [ $1 == "build" ]; then
   # sudo rsync -a "$stylesSourceD" "$stylesD"
   # sudo rsync -a "$scriptsSourceD" "$scriptsD"
 
-  # clean up
-  rm "$tempF"
 fi
