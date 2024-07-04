@@ -8,21 +8,22 @@
 scriptD=$(cd `dirname $0` && pwd)"/"
 templateSourceD=$scriptD"project.template/"
 
+# source folders
 projectD=$2"/"
-templateD=$projectD"frontend/html/"
 articleD=$projectD"data/articles/"
 pageD=$projectD"data/pages/"
+templateD=$projectD"frontend/html/"
+imgSourceD=$projectD"frontend/assets/"
+stylesSourceD=$projectD"frontend/css/"
+scriptsSourceD=$projectD"frontend/js/"
 
+# target folders
 articleHtmlD=$projectD"_rendered/articles/"
 pageHtmlD=$projectD"_rendered/pages/"
 htmlD=$projectD"_rendered/"
-imgSourceD=$htmlD"assets/"
-stylesSourceD=$htmlD"css/"
-scriptsSourceD=$htmlD"js/"
-
-imgD=$htmlD"images/"
-stylesD=$htmlD"styles/"
-scriptsD=$htmlD"scripts/"
+imgD=$htmlD"frontend/assets/"
+stylesD=$htmlD"frontend/css/"
+scriptsD=$htmlD"frontend/js/"
 
 # set up file variables
 articleTemplateF="$templateD""article.html"
@@ -77,7 +78,9 @@ fi
 if [ $1 == "build" ]; then
 
   #
+  #
   # build articles first
+  #
   #
 
   # make sure html folder is clean before we re-create
@@ -235,14 +238,16 @@ if [ $1 == "build" ]; then
   done
 
   #
+  #
   # copy static assets, js, css...
+  #
   #
 
   # copy images and other files from source to publish
   # adds the ability to process images, styles & scripts
   # before putting them into the published folder
-  # sudo rsync -a "$imgSourceD" "$imgD"
-  # sudo rsync -a "$stylesSourceD" "$stylesD"
-  # sudo rsync -a "$scriptsSourceD" "$scriptsD"
+  cp "$imgSourceD"* "$imgD"
+  cp "$stylesSourceD"* "$stylesD"
+  cp "$scriptsSourceD"* "$scriptsD"
 
 fi
