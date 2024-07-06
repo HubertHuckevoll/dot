@@ -18,9 +18,9 @@ stylesSourceD=$projectD"frontend/css/"
 scriptsSourceD=$projectD"frontend/js/"
 
 # target folders
-articleHtmlD=$projectD"_rendered/articles/"
-pageHtmlD=$projectD"_rendered/pages/"
 htmlD=$projectD"_rendered/"
+articleHtmlD=$htmlD"articles/"
+pageHtmlD=$htmlD"pages/"
 imgD=$htmlD"frontend/assets/"
 stylesD=$htmlD"frontend/css/"
 scriptsD=$htmlD"frontend/js/"
