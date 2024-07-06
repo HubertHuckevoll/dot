@@ -35,8 +35,6 @@ indexFooterF="$templateD""indexPost.html"
 
 tempF=$templateD"_temp.html"
 
-markdownFiles=()
-
 # help
 if [ -z "${1}" ]; then
   echo;
