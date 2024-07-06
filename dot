@@ -42,6 +42,18 @@ if [ -z "${1}" ]; then
   echo;
   echo "[DOT - a tiny static site generator]"
   echo;
+  echo "A tiny static blog generator written with bash and some common"
+  echo "Linux tools."
+  echo;
+  echo "Needs:"
+  echo "- libxml2-utils"
+  echo "- markdown"
+  echo "- html-xml-utils"
+  echo "- rsync"
+  echo;
+  echo "- busybox (for staging server)"
+  #echo - (recode, optional, for retro pages)
+  echo;
   echo "Usage:";
   echo "./dot init    ~/blogname";
   echo "./dot article ~/blogname articleName";
