@@ -6,10 +6,10 @@
 
 # set up folder variables
 scriptD=$(cd `dirname $0` && pwd)"/"
-templateSourceD=$scriptD"project.template/"
+projectD=$2"/"
 
 # source folders
-projectD=$2"/"
+templateSourceD=$scriptD"project.template/"
 articleD=$projectD"data/articles/"
 pageD=$projectD"data/pages/"
 templateD=$projectD"frontend/html/"
