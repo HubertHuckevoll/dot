@@ -36,57 +36,56 @@ indexFooterF="$templateD""indexPost.html"
 tempF=$templateD"_temp.html"
 
 # help
-if [ -z "${1}" ]; then
-  echo;
-  echo "[DOT - a tiny static site generator]"
-  echo;
-  echo "A tiny static blog generator written with bash and some common"
-  echo "Linux tools."
-  echo;
-  echo "Needs:"
-  echo "- libxml2-utils"
-  echo "- markdown"
-  echo "- html-xml-utils"
-  echo "- rsync"
-  echo;
-  echo "- busybox (for staging server)"
-  #echo - (recode, optional, for retro pages)
-  echo;
-  echo "Usage:";
-  echo "./dot init    ~/blogname";
-  echo "./dot article ~/blogname articleName";
-  echo "./dot page    ~/blogname pageName";
-  echo "./dot build   ~/blogname";
-  echo;
-  exit 0
-fi
+help_show()
+{
+    echo "[DOT - a tiny static site generator]"
+    echo;
+    echo "...written with bash and some common Linux tools. Needs:"
+    echo "- libxml2-utils"
+    echo "- markdown"
+    echo "- html-xml-utils"
+    echo "- rsync"
+    echo "(- busybox - for staging server)"
+    #echo - (recode, optional, for retro pages)
+    echo;
+    echo "Usage:";
+    echo "./dot init    ~/blogname";
+    echo "./dot article ~/blogname articleName";
+    echo "./dot page    ~/blogname pageName";
+    echo "./dot build   ~/blogname";
+    echo;
+    exit 0
+}
 
 # init a new project structure
-if [ $1 == "init" ]; then
+project_init()
+{
   mkdir -p "$projectD"
   cp -r $templateSourceD* $projectD
   exit 0
-fi
+}
 
 # init a new article
-if [ $1 == "article" ]; then
+article_create()
+{
   dirN="$articleD"$(date +"%Y_%m_%d_%H_%M")
   mkdir -p "$dirN"
   touch "$dirN"/$3".md"
   exit 0
-fi
+}
 
 # init a new article
-if [ $1 == "page" ]; then
+page_create()
+{
   dirN="$pageD"/$3
   mkdir -p "$dirN"
   touch "$dirN"/$3".md"
   exit 0
-fi
+}
 
 # build everything
-if [ $1 == "build" ]; then
-
+build()
+{
   #
   #
   # build articles first
@@ -259,5 +258,22 @@ if [ $1 == "build" ]; then
   cp "$imgSourceD"* "$imgD"
   cp "$stylesSourceD"* "$stylesD"
   cp "$scriptsSourceD"* "$scriptsD"
+}
 
-fi
+case $1 in
+    "")
+        help_show
+        ;;
+
+    "project_init")
+        init_project
+        ;;
+
+    "article_create")
+        create_article
+        ;;
+
+    *)
+        echo "Unknown command."
+        ;;
+esac
