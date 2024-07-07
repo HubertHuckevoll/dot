@@ -62,15 +62,18 @@ project_init()
 {
   mkdir -p "$projectD"
   cp -r $templateSourceD* $projectD
+  echo "Initiating "$projectD
   exit 0
 }
 
 # init a new article
 article_create()
 {
-  dirN="$articleD"$(date +"%Y_%m_%d_%H_%M")
+  local dirN="$articleD"$(date +"%Y_%m_%d_%H_%M")
+  local fname="$dirN"/$1".md"
   mkdir -p "$dirN"
-  touch "$dirN"/$3".md"
+  touch $fname
+  echo "Creating "$fname
   exit 0
 }
 
@@ -221,7 +224,7 @@ build()
     content=$(markdown "$artMdF")
 
     # extract headline and summary
-    headline="$(echo $content | xml2asc| xmllint --html --xpath "//h2[1]/text()" -)"
+    headline="$(echo $content | xml2asc| xmllint --html --xpath "//h1[1]/text()" -)"
     summary="$(echo $content | xml2asc | xmllint --html --xpath "//p[1]/text()" -)"
     firstImage="$(echo $content | xml2asc | xmllint --html --xpath "string(//img[1]/@src)" -)"
 
@@ -255,9 +258,11 @@ build()
   # copy images and other files from source to publish
   # adds the ability to process images, styles & scripts
   # before putting them into the published folder
-  cp "$imgSourceD"* "$imgD"
-  cp "$stylesSourceD"* "$stylesD"
-  cp "$scriptsSourceD"* "$scriptsD"
+  # rsync --relative "$imgSourceD" "$imgD"
+  # rsync --relative "$stylesSourceD" "$stylesD"
+  # rsync --relative "$scriptsSourceD" "$scriptsD"
+
+  exit 0
 }
 
 case $1 in
@@ -265,12 +270,20 @@ case $1 in
         help_show
         ;;
 
-    "project_init")
-        init_project
+    "init")
+        project_init
         ;;
 
-    "article_create")
-        create_article
+    "article")
+        article_create $3
+        ;;
+
+    "page")
+        page_create
+        ;;
+
+    "build")
+        build
         ;;
 
     *)
