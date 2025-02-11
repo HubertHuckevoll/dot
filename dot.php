@@ -196,28 +196,33 @@ $name = $argv[3] ?? '';
 
 $generator = new Dot($projectDir);
 
-switch ($command) {
+switch ($command)
+{
     case 'init':
         $generator->init();
-        break;
+    break;
+
     case 'article':
         if ($name) {
             $generator->createArticle($name);
         } else {
             echo "Error: Missing article name.\n";
         }
-        break;
+    break;
+
     case 'page':
         if ($name) {
             $generator->createPage($name);
         } else {
             echo "Error: Missing page name.\n";
         }
-        break;
+    break;
+
     case 'build':
         $generator->build();
-        break;
+    break;
+
     default:
         echo "Unknown command: $command\n";
-        break;
+    break;
 }
