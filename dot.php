@@ -174,8 +174,6 @@ class Dot
     {
         if (!is_dir(filename: $path))
         {
-        if (!is_dir(filename: $path))
-        {
             mkdir(directory: $path, permissions: 0777, recursive: true);
         }
     }
@@ -215,9 +213,6 @@ class Dot
             }
             else
             {
-            }
-            else
-            {
                 unlink(filename: $file);
             }
         }
@@ -225,8 +220,6 @@ class Dot
 
     private function renderTemplate(string $template, array $placeholders): string
     {
-        foreach ($placeholders as $key => $value)
-        {
         foreach ($placeholders as $key => $value)
         {
             $template = str_replace(search: "{{" . strtoupper(string: $key) . "}}", replace: $value, subject: $template);
@@ -249,8 +242,6 @@ class Dot
 }
 
 // CLI Execution
-if ($argc < 2)
-{
 if ($argc < 2)
 {
     echo "Usage: php dot.php <command> <project_dir> [name]\n";
