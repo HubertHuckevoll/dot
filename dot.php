@@ -47,8 +47,6 @@ class Dot
         $this->copyDirectory(src: $this->templateSourceDir.'/frontend/', dest: $this->frontendDir);
         $this->copyDirectory(src: $this->templateSourceDir.'/data/', dest: $this->dataDir);
         $this->copyDirectory(src: $this->templateSourceDir.'/rendered/', dest: $this->renderedDir);
-        $this->copyDirectory(src: $this->templateSourceDir.'/data/', dest: $this->dataDir);
-        $this->copyDirectory(src: $this->templateSourceDir.'/rendered/', dest: $this->renderedDir);
 
         echo "Initialized project:\n";
         echo "  Data directory: {$this->dataDir}\n";
@@ -83,6 +81,9 @@ class Dot
     {
         // Initialize index content as a reference variable
         $indexContent = '';
+
+        // Clear the rendered directory
+        $this->clearDirectory($this->renderedDir);
 
         // Build articles and add them to the index
         $this->buildContent($this->articleDir, $this->articleHtmlDir, "article.html", $indexContent, true);
