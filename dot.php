@@ -21,16 +21,19 @@ class Dot
     public function __construct(string $projectDir)
     {
         $this->projectDir = rtrim(string: $projectDir, characters: '/');
-        $this->dataDir = $this->projectDir . ".data/";
-        $this->frontendDir = $this->projectDir . ".frontend/";
-        $this->renderedDir = $this->projectDir . ".rendered/";
 
-        $this->articleDir = $this->dataDir . "articles/";
-        $this->pageDir = $this->dataDir . "pages/";
-        $this->templateDir = $this->frontendDir . "html/";
-        $this->articleHtmlDir = $this->renderedDir . "articles/";
-        $this->pageHtmlDir = $this->renderedDir . "pages/";
-        $this->indexFile = $this->renderedDir . "index.html";
+        $this->dataDir = $this->projectDir.".data/";
+        $this->frontendDir = $this->projectDir.".frontend/";
+        $this->renderedDir = $this->projectDir.".rendered/";
+
+        $this->articleDir = $this->dataDir."articles/";
+        $this->pageDir = $this->dataDir."pages/";
+
+        $this->templateDir = $this->frontendDir."html/";
+
+        $this->articleHtmlDir = $this->renderedDir."articles/";
+        $this->pageHtmlDir = $this->renderedDir."pages/";
+        $this->indexFile = $this->renderedDir."index.html";
 
         $this->templateSourceDir = __DIR__ . "/project.template/";
     }
