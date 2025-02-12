@@ -156,7 +156,8 @@ class Dot
 
     private function ensureDirectory(string $path): void
     {
-        if (!is_dir(filename: $path)) {
+        if (!is_dir(filename: $path))
+        {
             mkdir(directory: $path, permissions: 0777, recursive: true);
         }
     }
@@ -164,17 +165,22 @@ class Dot
     private function copyDirectory(string $src, string $dest): void
     {
         $this->ensureDirectory(path: $dest);
-        foreach (scandir(directory: $src) as $item) {
-            if ($item === '.' || $item === '..') {
+        foreach (scandir(directory: $src) as $item)
+        {
+            if ($item === '.' || $item === '..')
+            {
                 continue;
             }
 
-            $srcPath = $src . $item;
-            $destPath = $dest . $item;
+            $srcPath = $src.$item;
+            $destPath = $dest.$item;
 
-            if (is_dir(filename: $srcPath)) {
-                $this->copyDirectory(src: $srcPath . '/', dest: $destPath . '/');
-            } else {
+            if (is_dir(filename: $srcPath))
+            {
+                $this->copyDirectory(src: $srcPath.'/', dest: $destPath.'/');
+            }
+            else
+            {
                 copy(from: $srcPath, to: $destPath);
             }
         }
@@ -182,11 +188,15 @@ class Dot
 
     private function clearDirectory(string $path): void
     {
-        foreach (glob(pattern: $path . '*') as $file) {
-            if (is_dir(filename: $file)) {
-                $this->clearDirectory(path: $file . '/');
+        foreach (glob(pattern: $path.'*') as $file)
+        {
+            if (is_dir(filename: $file))
+            {
+                $this->clearDirectory(path: $file.'/');
                 rmdir(directory: $file);
-            } else {
+            }
+            else
+            {
                 unlink(filename: $file);
             }
         }
@@ -194,7 +204,8 @@ class Dot
 
     private function renderTemplate(string $template, array $placeholders): string
     {
-        foreach ($placeholders as $key => $value) {
+        foreach ($placeholders as $key => $value)
+        {
             $template = str_replace(search: "{{" . strtoupper(string: $key) . "}}", replace: $value, subject: $template);
         }
         return $template;
@@ -214,7 +225,8 @@ class Dot
 }
 
 // CLI Execution
-if ($argc < 2) {
+if ($argc < 2)
+{
     echo "Usage: php dot.php <command> <project_dir> [name]\n";
     exit(1);
 }
