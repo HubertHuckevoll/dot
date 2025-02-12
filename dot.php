@@ -115,6 +115,7 @@ class Dot
             if (!empty($markdownFiles))
             {
                 $markdownFile = $markdownFiles[0]; // Fetch the first Markdown file
+                $outputFName = pathinfo($markdownFile, PATHINFO_FILENAME).'.html';
 
                 $markdownContent = file_get_contents(filename: $markdownFile);
                 $htmlContent = $this->markdownToHtml(markdown: $markdownContent);
@@ -130,16 +131,16 @@ class Dot
                     'content' => $htmlContent,
                 ]);
 
-                $outputFolder = $outputDir . $folder . '/';
+                $outputFolder = $outputDir.$folder.'/';
                 $this->ensureDirectory($outputFolder);
 
-                $outputFile = $outputFolder . 'index.html';
+                $outputFile = $outputFolder.$outputFName;
                 file_put_contents($outputFile, $outputContent);
 
                 // Add the article to the index if required
                 if ($addToIndex)
                 {
-                    $this->addToIndex($headline, "articles/$folder/index.html", $indexContent);
+                    $this->addToIndex($headline, "articles/$folder/".$outputFName, $indexContent);
                 }
             }
         }
@@ -239,6 +240,7 @@ class Dot
         $html = preg_replace(pattern: '/^## (.*?)$/m', replacement: '<h2>$1</h2>', subject: $html);
         $html = preg_replace(pattern: '/^### (.*?)$/m', replacement: '<h3>$1</h3>', subject: $html);
         $html = preg_replace(pattern: '/\n/', replacement: '<br>', subject: $html);
+
         return $html;
     }
 }
