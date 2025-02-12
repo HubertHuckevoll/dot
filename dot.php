@@ -90,6 +90,9 @@ class Dot
 
     private function buildContent(string $sourceDir, string $outputDir, string $templateFile): void
     {
+        // Declare
+        $matches = [];
+
         // Load the index templates
         $indexPre = file_get_contents(filename: $this->templateDir . "indexPre.html");
         $indexItem = file_get_contents(filename: $this->templateDir . "indexItem.html");
