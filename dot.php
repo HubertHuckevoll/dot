@@ -47,6 +47,8 @@ class Dot
         $this->copyDirectory(src: $this->templateSourceDir.'/frontend/', dest: $this->frontendDir);
         $this->copyDirectory(src: $this->templateSourceDir.'/data/', dest: $this->dataDir);
         $this->copyDirectory(src: $this->templateSourceDir.'/rendered/', dest: $this->renderedDir);
+        $this->copyDirectory(src: $this->templateSourceDir.'/data/', dest: $this->dataDir);
+        $this->copyDirectory(src: $this->templateSourceDir.'/rendered/', dest: $this->renderedDir);
 
         echo "Initialized project:\n";
         echo "  Data directory: {$this->dataDir}\n";
@@ -79,41 +81,36 @@ class Dot
 
     public function build(): void
     {
-        $this->ensureDirectory(path: $this->renderedDir);
+        // Initialize index content as a reference variable
+        $indexContent = '';
 
-        // Clean up old files
-        $this->clearDirectory(path: $this->renderedDir);
+        // Build articles and add them to the index
+        $this->buildContent($this->articleDir, $this->articleHtmlDir, "article.html", $indexContent, true);
 
-        // Build articles
-        $this->buildContent(sourceDir: $this->articleDir, outputDir: $this->articleHtmlDir, templateFile: "article.html");
+        // Build pages (do not add them to the index)
+        $this->buildContent($this->pageDir, $this->pageHtmlDir, "page.html", $indexContent, false);
 
-        // Build pages
-        $this->buildContent(sourceDir: $this->pageDir, outputDir: $this->pageHtmlDir, templateFile: "page.html");
+        // Finalize and write the index file
+        $this->finalizeIndex($indexContent);
 
         echo "Site built successfully at {$this->renderedDir}\n";
     }
 
-    private function buildContent(string $sourceDir, string $outputDir, string $templateFile): void
+    private function buildContent(
+        string $sourceDir,
+        string $outputDir,
+        string $templateFile,
+        string &$indexContent,
+        bool $addToIndex = false
+    ): void
     {
-        // Declare
-        $matches = [];
-
-        // Load the index templates
-        $indexPre = file_get_contents(filename: $this->templateDir . "indexPre.html");
-        $indexItem = file_get_contents(filename: $this->templateDir . "indexItem.html");
-        $indexPost = file_get_contents(filename: $this->templateDir . "indexPost.html");
-
-        // Start with the preamble
-        $indexContent = $indexPre;
-
-        // Process each folder in the source directory
-        $items = array_diff(array: scandir(directory: $sourceDir), arrays: ['.', '..']);
+        $items = array_diff(scandir($sourceDir), ['.', '..']);
 
         foreach ($items as $folder)
         {
             $folderPath = $sourceDir . $folder . '/';
-            $files = array_diff(array: scandir(directory: $folderPath), arrays: ['.', '..']);
-            $markdownFile = $folderPath . reset(array: $files);
+            $files = array_diff(scandir($folderPath), ['.', '..']);
+            $markdownFile = $folderPath . reset($files);
 
             if (pathinfo(path: $markdownFile, flags: PATHINFO_EXTENSION) === 'md')
             {
@@ -121,41 +118,62 @@ class Dot
                 $htmlContent = $this->markdownToHtml(markdown: $markdownContent);
 
                 // Extract metadata (e.g., headline)
-                preg_match(pattern: '/^# (.*?)$/m', subject: $markdownContent, matches: $matches);
+                preg_match('/^# (.*?)$/m', $markdownContent, $matches);
                 $headline = $matches[1] ?? 'Untitled';
 
-                // Generate article output
+                // Generate article/page output
                 $templatePath = $this->templateDir . $templateFile;
-                $outputContent = $this->renderTemplate(template: file_get_contents(filename: $templatePath), placeholders: [
+                $outputContent = $this->renderTemplate(file_get_contents($templatePath), [
                     'headline' => $headline,
                     'content' => $htmlContent,
                 ]);
 
                 $outputFolder = $outputDir . $folder . '/';
-                $this->ensureDirectory(path: $outputFolder);
+                $this->ensureDirectory($outputFolder);
 
                 $outputFile = $outputFolder . 'index.html';
-                file_put_contents(filename: $outputFile, data: $outputContent);
+                file_put_contents($outputFile, $outputContent);
 
-                // Generate index item using indexItem template
-                $itemContent = $this->renderTemplate(template: $indexItem, placeholders: [
-                    'headline' => $headline,
-                    'url' => "articles/$folder/index.html",
-                ]);
-
-                $indexContent .= $itemContent;
+                // Add the article to the index if required
+                if ($addToIndex)
+                {
+                    $this->addToIndex($headline, "articles/$folder/index.html", $indexContent);
+                }
             }
         }
+    }
 
-        // Append the postamble
-        $indexContent .= $indexPost;
+    private function addToIndex(string $headline, string $url, string &$indexContent): void
+    {
+        // Load the indexItem template
+        $indexItem = file_get_contents($this->templateDir . "indexItem.html");
+
+        // Render the index item and append it to the content
+        $itemContent = $this->renderTemplate($indexItem, [
+            'headline' => $headline,
+            'url' => $url,
+        ]);
+
+        $indexContent .= $itemContent;
+    }
+
+    private function finalizeIndex(string $indexContent): void
+    {
+        // Load the indexPre and indexPost templates
+        $indexPre = file_get_contents($this->templateDir . "indexPre.html");
+        $indexPost = file_get_contents($this->templateDir . "indexPost.html");
+
+        // Combine the full index content
+        $fullIndexContent = $indexPre.$indexContent.$indexPost;
 
         // Write the full index file
-        file_put_contents(filename: $this->indexFile, data: $indexContent);
+        file_put_contents($this->indexFile, $fullIndexContent);
     }
 
     private function ensureDirectory(string $path): void
     {
+        if (!is_dir(filename: $path))
+        {
         if (!is_dir(filename: $path))
         {
             mkdir(directory: $path, permissions: 0777, recursive: true);
@@ -197,6 +215,9 @@ class Dot
             }
             else
             {
+            }
+            else
+            {
                 unlink(filename: $file);
             }
         }
@@ -206,8 +227,11 @@ class Dot
     {
         foreach ($placeholders as $key => $value)
         {
+        foreach ($placeholders as $key => $value)
+        {
             $template = str_replace(search: "{{" . strtoupper(string: $key) . "}}", replace: $value, subject: $template);
         }
+
         return $template;
     }
 
@@ -227,6 +251,8 @@ class Dot
 // CLI Execution
 if ($argc < 2)
 {
+if ($argc < 2)
+{
     echo "Usage: php dot.php <command> <project_dir> [name]\n";
     exit(1);
 }
@@ -244,17 +270,23 @@ switch ($command)
     break;
 
     case 'article':
-        if ($name) {
+        if ($name)
+        {
             $generator->createArticle(name: $name);
-        } else {
+        }
+        else
+        {
             echo "Error: Missing article name.\n";
         }
     break;
 
     case 'page':
-        if ($name) {
+        if ($name)
+        {
             $generator->createPage(name: $name);
-        } else {
+        }
+        else
+        {
             echo "Error: Missing page name.\n";
         }
     break;
