@@ -68,10 +68,10 @@ class Dot
 
     public function createPage(string $name): void
     {
-        $pagePath = $this->pageDir . $name . '/';
+        $pagePath = $this->pageDir.$name.'/';
         $this->ensureDirectory(path: $pagePath);
 
-        $markdownFile = $pagePath . $name . '.md';
+        $markdownFile = $pagePath.$name.'.md';
         file_put_contents(filename: $markdownFile, data: "# New Page\n\nContent goes here.");
 
         echo "Created page: $markdownFile\n";
