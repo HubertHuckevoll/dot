@@ -109,12 +109,13 @@ class Dot
 
         foreach ($items as $folder)
         {
-            $folderPath = $sourceDir . $folder . '/';
-            $files = array_diff(scandir($folderPath), ['.', '..']);
-            $markdownFile = $folderPath . reset($files);
+            $folderPath = $sourceDir.$folder.'/';
+            $markdownFiles = glob($folderPath.'*.md');
 
-            if (pathinfo(path: $markdownFile, flags: PATHINFO_EXTENSION) === 'md')
+            if (!empty($markdownFiles))
             {
+                $markdownFile = $markdownFiles[0]; // Fetch the first Markdown file
+
                 $markdownContent = file_get_contents(filename: $markdownFile);
                 $htmlContent = $this->markdownToHtml(markdown: $markdownContent);
 
