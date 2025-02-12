@@ -45,6 +45,8 @@ class Dot
         $this->ensureDirectory(path: $this->renderedDir);
 
         $this->copyDirectory(src: $this->templateSourceDir.'/frontend/', dest: $this->frontendDir);
+        $this->copyDirectory(src: $this->templateSourceDir.'/data/', dest: $this->dataDir);
+        $this->copyDirectory(src: $this->templateSourceDir.'/rendered/', dest: $this->renderedDir);
 
         echo "Initialized project:\n";
         echo "  Data directory: {$this->dataDir}\n";
@@ -106,12 +108,15 @@ class Dot
 
         // Process each folder in the source directory
         $items = array_diff(array: scandir(directory: $sourceDir), arrays: ['.', '..']);
-        foreach ($items as $folder) {
+
+        foreach ($items as $folder)
+        {
             $folderPath = $sourceDir . $folder . '/';
             $files = array_diff(array: scandir(directory: $folderPath), arrays: ['.', '..']);
             $markdownFile = $folderPath . reset(array: $files);
 
-            if (pathinfo(path: $markdownFile, flags: PATHINFO_EXTENSION) === 'md') {
+            if (pathinfo(path: $markdownFile, flags: PATHINFO_EXTENSION) === 'md')
+            {
                 $markdownContent = file_get_contents(filename: $markdownFile);
                 $htmlContent = $this->markdownToHtml(markdown: $markdownContent);
 
