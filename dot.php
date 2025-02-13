@@ -231,49 +231,49 @@ class Dot
         return $template;
     }
 
-    private function markdownToHtml(string $html): string
+    private function markdownToHtml(string $str): string
     {
-        $html = htmlspecialchars(string: $html);
+        $str = htmlspecialchars(string: $str);
 
         // Convert headers (e.g., # Header)
-        $html = preg_replace_callback('/^(#{1,6})\s*(.+)$/m', function ($matches) {
+        $str = preg_replace_callback('/^(#{1,6})\s*(.+)$/m', function ($matches) {
             $level = strlen($matches[1]);
             return "<h{$level}>{$matches[2]}</h{$level}>";
-        }, $html);
+        }, $str);
 
         // Convert bold text (**bold** or __bold__)
-        $html = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $html);
-        $html = preg_replace('/__(.*?)__/', '<strong>$1</strong>', $html);
+        $str = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $str);
+        $str = preg_replace('/__(.*?)__/', '<strong>$1</strong>', $str);
 
         // Convert italic text (*italic* or _italic_)
-        $html = preg_replace('/\*(.*?)\*/', '<em>$1</em>', $html);
-        $html = preg_replace('/_(.*?)_/', '<em>$1</em>', $html);
+        $str = preg_replace('/\*(.*?)\*/', '<em>$1</em>', $str);
+        $str = preg_replace('/_(.*?)_/', '<em>$1</em>', $str);
 
         // Convert inline code (`code`)
-        $html = preg_replace('/`(.*?)`/', '<code>$1</code>', $html);
+        $str = preg_replace('/`(.*?)`/', '<code>$1</code>', $str);
 
         // Convert links ([text](url))
-        $html = preg_replace('/\[(.*?)\]\((.*?)\)/', '<a href="$2">$1</a>', $html);
+        $str = preg_replace('/\[(.*?)\]\((.*?)\)/', '<a href="$2">$1</a>', $str);
 
         // Convert images (![alt text](url))
-        $html = preg_replace('/!\[(.*?)\]\((.*?)\)/', '<img src="$2" alt="$1">', $html);
+        $str = preg_replace('/!\[(.*?)\]\((.*?)\)/', '<img src="$2" alt="$1">', $str);
 
         // Convert unordered lists (- item or * item)
-        $html = preg_replace('/^\s*[-*]\s+(.+)$/m', '<li>$1</li>', $html);
-        $html = preg_replace('/(<li>.*<\/li>)/s', '<ul>$1</ul>', $html);
+        $str = preg_replace('/^\s*[-*]\s+(.+)$/m', '<li>$1</li>', $str);
+        $str = preg_replace('/(<li>.*<\/li>)/s', '<ul>$1</ul>', $str);
 
         // Convert ordered lists (1. item, 2. item, etc.)
-        $html = preg_replace('/^\s*\d+\.\s+(.+)$/m', '<li>$1</li>', $html);
-        $html = preg_replace('/(<li>.*<\/li>)/s', '<ol>$1</ol>', $html);
+        $str = preg_replace('/^\s*\d+\.\s+(.+)$/m', '<li>$1</li>', $str);
+        $str = preg_replace('/(<li>.*<\/li>)/s', '<ol>$1</ol>', $str);
 
         // Convert code blocks (``` code block ```)
-        $html = preg_replace('/```(.*?)```/s', '<pre><code>$1</code></pre>', $html);
+        $str = preg_replace('/```(.*?)```/s', '<pre><code>$1</code></pre>', $str);
 
         // Convert new lines to paragraphs
-        $paragraphs = preg_split('/\n\s*\n/', trim($html));
-        $html = implode("\n", array_map(fn($p) => "<p>{$p}</p>", $paragraphs));
+        $paragraphs = preg_split('/\n\s*\n/', trim($str));
+        $str = implode("\n", array_map(fn($p) => "<p>{$p}</p>", $paragraphs));
 
-        return $html;
+        return $str;
     }
 }
 
