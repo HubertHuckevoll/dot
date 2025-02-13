@@ -105,6 +105,7 @@ class Dot
         bool $addToIndex = false
     ): void
     {
+        $articleData = [];
         $items = array_diff(scandir($sourceDir), ['.', '..']);
 
         foreach ($items as $folder)
@@ -117,19 +118,15 @@ class Dot
                 $markdownFile = $markdownFiles[0]; // Fetch the first Markdown file
                 $outputFName = pathinfo($markdownFile, PATHINFO_FILENAME).'.html';
 
+                // Read file contents
                 $markdownContent = file_get_contents($markdownFile);
-                $htmlContent = $this->markdownToHtml($markdownContent);
 
                 // Extract metadata (e.g., headline)
-                preg_match('/^# (.*?)$/m', $markdownContent, $matches);
-                $headline = $matches[1] ?? 'Untitled';
+                $articleData = $this->extractArticleData($markdownContent);
 
                 // Generate article/page output
                 $templatePath = $this->templateDir.$templateFile;
-                $outputContent = $this->renderTemplate(file_get_contents($templatePath), [
-                    'headline' => $headline,
-                    'content' => $htmlContent,
-                ]);
+                $outputContent = $this->renderTemplate(file_get_contents($templatePath), $articleData);
 
                 $outputFolder = $outputDir.$folder.'/';
                 $this->ensureDirectory($outputFolder);
@@ -140,10 +137,37 @@ class Dot
                 // Add the article to the index if required
                 if ($addToIndex)
                 {
-                    $this->addToIndex($headline, "articles/$folder/".$outputFName, $indexContent);
+                    $this->addToIndex($articleData['headline'], "articles/$folder/".$outputFName, $indexContent);
                 }
             }
         }
+    }
+
+    private function extractArticleData(string $markdownContent): array
+    {
+        $metadata = [];
+
+        // Extract HEADLINE (first level 1 heading, i.e., # ...)
+        preg_match('/^# (.*?)$/m', $markdownContent, $matches);
+        $metadata['headline'] = $matches[1] ?? 'Untitled';
+
+        // Extract SUMMARY (first paragraph)
+        preg_match('/\n\n(.*?)(\n\n|$)/s', $markdownContent, $matches);
+        $metadata['summary'] = isset($matches[1]) ? trim($matches[1]) : '';
+
+        // Extract AUTHOR and DATE
+        preg_match('/^# .*?\nby (.*?), (.*?)$/m', $markdownContent, $matches);
+        $metadata['author'] = isset($matches[1]) ? trim($matches[1]) : 'Unknown Author';
+        $metadata['date'] = isset($matches[2]) ? trim($matches[2]) : 'Unknown Date';
+
+        // Extract IMAGE (first image URL in the markdown syntax: ![alt text](image-url))
+        preg_match('/!\[.*?\]\((.*?)\)/', $markdownContent, $matches);
+        $metadata['image'] = isset($matches[1]) ? $matches[1] : '';
+
+        // Convert the content to HTML
+        $metadata['content'] = $this->markdownToHtml($markdownContent);
+
+        return $metadata;
     }
 
     private function addToIndex(string $headline, string $url, string &$indexContent): void
