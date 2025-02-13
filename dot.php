@@ -20,7 +20,7 @@ class Dot
 
     public function __construct(string $projectDir)
     {
-        $this->projectDir = rtrim(string: $projectDir, characters: '/');
+        $this->projectDir = rtrim($projectDir, '/');
 
         $this->dataDir = $this->projectDir.".data/";
         $this->frontendDir = $this->projectDir.".frontend/";
@@ -40,13 +40,13 @@ class Dot
 
     public function init(): void
     {
-        $this->ensureDirectory(path: $this->dataDir);
-        $this->ensureDirectory(path: $this->frontendDir);
-        $this->ensureDirectory(path: $this->renderedDir);
+        $this->ensureDirectory($this->dataDir);
+        $this->ensureDirectory($this->frontendDir);
+        $this->ensureDirectory($this->renderedDir);
 
-        $this->copyDirectory(src: $this->templateSourceDir.'/frontend/', dest: $this->frontendDir);
-        $this->copyDirectory(src: $this->templateSourceDir.'/data/', dest: $this->dataDir);
-        $this->copyDirectory(src: $this->templateSourceDir.'/rendered/', dest: $this->renderedDir);
+        $this->copyDirectory($this->templateSourceDir.'/frontend/', $this->frontendDir);
+        $this->copyDirectory($this->templateSourceDir.'/data/', $this->dataDir);
+        $this->copyDirectory($this->templateSourceDir.'/rendered/', $this->renderedDir);
 
         echo "Initialized project:\n";
         echo "  Data directory: {$this->dataDir}\n";
@@ -56,23 +56,23 @@ class Dot
 
     public function createArticle(string $name): void
     {
-        $timestamp = date(format: 'Y_m_d_H_i');
-        $articlePath = $this->articleDir . $timestamp . '/';
-        $this->ensureDirectory(path: $articlePath);
+        $timestamp = date('Y_m_d_H_i');
+        $articlePath = $this->articleDir.$timestamp.'/';
+        $this->ensureDirectory($articlePath);
 
-        $markdownFile = $articlePath . $name . '.md';
-        file_put_contents(filename: $markdownFile, data: "# New Article\n\nContent goes here.");
+        $markdownFile = $articlePath.$name.'.md';
+        file_put_contents($markdownFile, "# New Article\n\nContent goes here.");
 
-        echo "Created article: $markdownFile\n";
+        echo "Created article: {$markdownFile}\n";
     }
 
     public function createPage(string $name): void
     {
         $pagePath = $this->pageDir.$name.'/';
-        $this->ensureDirectory(path: $pagePath);
+        $this->ensureDirectory($pagePath);
 
         $markdownFile = $pagePath.$name.'.md';
-        file_put_contents(filename: $markdownFile, data: "# New Page\n\nContent goes here.");
+        file_put_contents($markdownFile, "# New Page\n\nContent goes here.");
 
         echo "Created page: $markdownFile\n";
     }
@@ -117,15 +117,15 @@ class Dot
                 $markdownFile = $markdownFiles[0]; // Fetch the first Markdown file
                 $outputFName = pathinfo($markdownFile, PATHINFO_FILENAME).'.html';
 
-                $markdownContent = file_get_contents(filename: $markdownFile);
-                $htmlContent = $this->markdownToHtml(markdown: $markdownContent);
+                $markdownContent = file_get_contents($markdownFile);
+                $htmlContent = $this->markdownToHtml($markdownContent);
 
                 // Extract metadata (e.g., headline)
                 preg_match('/^# (.*?)$/m', $markdownContent, $matches);
                 $headline = $matches[1] ?? 'Untitled';
 
                 // Generate article/page output
-                $templatePath = $this->templateDir . $templateFile;
+                $templatePath = $this->templateDir.$templateFile;
                 $outputContent = $this->renderTemplate(file_get_contents($templatePath), [
                     'headline' => $headline,
                     'content' => $htmlContent,
@@ -149,7 +149,7 @@ class Dot
     private function addToIndex(string $headline, string $url, string &$indexContent): void
     {
         // Load the indexItem template
-        $indexItem = file_get_contents($this->templateDir . "indexItem.html");
+        $indexItem = file_get_contents($this->templateDir."indexItem.html");
 
         // Render the index item and append it to the content
         $itemContent = $this->renderTemplate($indexItem, [
@@ -175,16 +175,17 @@ class Dot
 
     private function ensureDirectory(string $path): void
     {
-        if (!is_dir(filename: $path))
+        if (!is_dir($path))
         {
-            mkdir(directory: $path, permissions: 0777, recursive: true);
+            mkdir($path, 0777, true);
         }
     }
 
     private function copyDirectory(string $src, string $dest): void
     {
-        $this->ensureDirectory(path: $dest);
-        foreach (scandir(directory: $src) as $item)
+        $this->ensureDirectory($dest);
+
+        foreach (scandir($src) as $item)
         {
             if ($item === '.' || $item === '..')
             {
@@ -194,29 +195,29 @@ class Dot
             $srcPath = $src.$item;
             $destPath = $dest.$item;
 
-            if (is_dir(filename: $srcPath))
+            if (is_dir($srcPath))
             {
-                $this->copyDirectory(src: $srcPath.'/', dest: $destPath.'/');
+                $this->copyDirectory($srcPath.'/', $destPath.'/');
             }
             else
             {
-                copy(from: $srcPath, to: $destPath);
+                copy($srcPath, $destPath);
             }
         }
     }
 
     private function clearDirectory(string $path): void
     {
-        foreach (glob(pattern: $path.'*') as $file)
+        foreach (glob($path.'*') as $file)
         {
-            if (is_dir(filename: $file))
+            if (is_dir($file))
             {
-                $this->clearDirectory(path: $file.'/');
-                rmdir(directory: $file);
+                $this->clearDirectory($file.'/');
+                rmdir($file);
             }
             else
             {
-                unlink(filename: $file);
+                unlink($file);
             }
         }
     }
@@ -225,7 +226,7 @@ class Dot
     {
         foreach ($placeholders as $key => $value)
         {
-            $template = str_replace(search: "{{" . strtoupper(string: $key) . "}}", replace: $value, subject: $template);
+            $template = str_replace("{{".strtoupper($key)."}}", $value, $template);
         }
 
         return $template;
@@ -233,7 +234,7 @@ class Dot
 
     private function markdownToHtml(string $str): string
     {
-        $str = htmlspecialchars(string: $str);
+        $str = htmlspecialchars($str);
 
         // Convert headers (e.g., # Header)
         $str = preg_replace_callback('/^(#{1,6})\s*(.+)$/m', function ($matches) {
@@ -299,7 +300,7 @@ switch ($command)
     case 'article':
         if ($name)
         {
-            $generator->createArticle(name: $name);
+            $generator->createArticle($name);
         }
         else
         {
@@ -310,7 +311,7 @@ switch ($command)
     case 'page':
         if ($name)
         {
-            $generator->createPage(name: $name);
+            $generator->createPage($name);
         }
         else
         {
