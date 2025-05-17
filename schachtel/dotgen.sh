@@ -3,7 +3,8 @@
 # wrapped up in a container
 
 # exit on any error
-# set -e
+set -euo pipefail
+set -x
 
 # store command
 commando=$1
