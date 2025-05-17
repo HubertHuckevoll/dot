@@ -165,9 +165,9 @@ if [ $1 == "build" ]; then
   # copy images and other files from source to publish
   # adds the ability to process images, styles & scripts
   # before putting them into the published folder
-  sudo rsync -a "$imgSourceD" "$imgD"
-  sudo rsync -a "$stylesSourceD" "$stylesD"
-  sudo rsync -a "$scriptsSourceD" "$scriptsD"
+  rsync -a "$imgSourceD" "$imgD"
+  rsync -a "$stylesSourceD" "$stylesD"
+  rsync -a "$scriptsSourceD" "$scriptsD"
 
   # clean up
   rm "$tempF"
