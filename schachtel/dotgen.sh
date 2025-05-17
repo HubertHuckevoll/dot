@@ -1,160 +1,149 @@
 #!/bin/bash
-# "dot" - a tiny static blog generator written with bash and unix tools
+# "dot" - a tiny static blog generator written with bash and linux tools
+# wrapped up in a container
 
 # exit on any error
 # set -e
 
-# set up folder variables
-scriptD=$(cd `dirname $0` && pwd)"/"
-templateSourceD=$scriptD"templates/"
+# store command
+commando=$1
 
-projectD=$2"/"
-mdD=$projectD"md/"
-htmlD=$projectD"_published/"
-imgSourceD=$projectD"images/"
-stylesSourceD=$projectD"styles/"
-scriptsSourceD=$projectD"scripts/"
-templateD=$projectD"templates/"
-
-imgD=$htmlD"images/"
-stylesD=$htmlD"styles/"
-scriptsD=$htmlD"scripts/"
-
-# set up file variables
-templateF="$templateD""article.html"
-indexF="$htmlD""index.html"
-indexHeaderF="$templateD""indexPre.html"
-indexItemF="$templateD""indexItem.html"
-indexFooterF="$templateD""indexPost.html"
-
-tempF=$templateD"_temp.html"
-
-markdownFiles=()
-
-# help
-if [ -z "${1}" ]; then
+# help if no commando given
+if [ -z "$commando" ]; then
   echo;
   echo "[DOT - a tiny static blog generator]"
   echo;
   echo "Usage:";
   echo "./dot init  ~/blogname";
   echo "./dot new   ~/blogname articleName";
-  echo "./dot build ~/blogname";
+  echo "./dot build ~/blogname ~/themeDir";
   echo;
   exit 0
 fi
 
 # init a new project structure
-if [ $1 == "init" ]; then
-  mkdir -p "$projectD"
-  mkdir -p "$mdD"
-  mkdir -p "$htmlD"
-  mkdir -p "$imgD"
-  mkdir -p "$stylesD"
-  mkdir -p "$templateD"
-  mkdir -p "$imgSourceD"
-  mkdir -p "$stylesSourceD"
-  mkdir -p "$scriptsSourceD"
-  mkdir -p "$scriptsD"
+if [ $commando == "init" ]; then
 
-  cp $templateSourceD*.html $templateD
+  projectD=$2
+  publishedD=$projectD".published/"
+  assetsD=$publishedD"assets/"
+
+  mkdir -p "$projectD"
+  mkdir -p "$publishedD"
+  mkdir -p "$assetsD"
+
   exit 0
 fi
 
 # init a new article
-if [ $1 == "new" ]; then
-  fname="$mdD"$(date +"%Y_%m_%d_%H_%M")_$3".md"
+if [ $commando == "new" ]; then
+  folderName="${2}"/"$(date +'%Y_%m_%d_%H_%M')_${3}"
+  fname=$folderName"/article.md"
+  mkdir -p $folderName
   touch $fname
   exit 0
 fi
 
 # build everything
-if [ $1 == "build" ]; then
+if [ $commando == "build" ]; then
+
+  if [ $# -lt 3 ]; then
+    echo "Usage: dot build <blogDir> <templateDir>"
+    exit 1
+  fi
+
+  # folders
+  projectD=$2
+  templateD=$3"/html/"
+  assetsSrcD=$3"/assets/"
+
+  publishedD=$projectD".published/"
+  assetsD=$publishedD"assets/"
+
+  # set up target files
+  indexF="$publishedD""index.html"
+  tempF="$publishedD""temp.html"
+
+  # set up source template files
+  templateF="$templateD""article.html"
+  indexHeaderF="$templateD""indexPre.html"
+  indexItemF="$templateD""indexItem.html"
+  indexFooterF="$templateD""indexPost.html"
+
   # make sure html folder is clean before we re-create
-  rm "$htmlD"*.html > /dev/null 2>&1
+  rm "$publishedD"*.html > /dev/null 2>&1
 
   # add preample to index
   cat "$indexHeaderF" > "$tempF"
 
-  # read markdown files
+  # read markdown article folders
   shopt -s nullglob
-  markdownFiles=($mdD*.md)
+  articleDirs=("$projectD"*/)
 
-  # loop over markdown files in reverse order:
-  # youngest first
-  for ((idx=${#markdownFiles[@]}-1; idx>=0; idx--));
-  do
-    markdownF="${markdownFiles[idx]}"
-    echo "Processing '$markdownF'";
+  # sort newest first (reverse)
+  IFS=$'\n' sortedArticleDirs=($(printf "%s\n" "${articleDirs[@]}" | sort -r))
 
-    # grab current markdown file
-    articleF=$htmlD"$(basename "$markdownF" .md).html"
+  for dir in "${sortedArticleDirs[@]}"; do
+    markdownF="${dir}article.md"
 
-    # extract first letter for check if file name starts with "_"
-    isPage=$(basename "$markdownF")
-    isPage=${isPage:0:1}
+    # skip if article.md not found
+    [ -f "$markdownF" ] || continue
 
-    # extract date from filename: 2023_09_14_13_30_dot_article_2 or use
-    # current date for "pages"
-    if [ $isPage != "_" ]; then
-      filename=$(basename "$markdownF")
-      date_time=$(echo $filename | sed -E 's/([0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2})_.*/\1/g')
-      year=${date_time:0:4}
-      month=${date_time:5:2}
-      day=${date_time:8:2}
-      hour=${date_time:11:2}
-      minute=${date_time:14:2}
+    echo "Processing '$markdownF'"
+
+    # filename is the folder name without trailing slash
+    folderName=$(basename "$dir")
+
+    # determine if it's a page (starts with '_')
+    isPage=${folderName:0:1}
+
+    if [ "$isPage" != "_" ]; then
+      # extract date and time from folder name (e.g. 2025_05_17_14_36)
+      year=${folderName:0:4}
+      month=${folderName:5:2}
+      day=${folderName:8:2}
+      hour=${folderName:11:2}
+      minute=${folderName:14:2}
       dmod=$(date -d "$year-$month-$day $hour:$minute" +"%Y-%m-%d %H:%M")
     else
       dmod=$(date -d "@$(stat -c '%Y' "$markdownF")" +"%Y-%m-%d %H:%M")
     fi
 
+    # output file
+    articleF="$publishedD${folderName}.html"
+
     # do the md => html conversion
     content=$(markdown "$markdownF")
 
     # extract headline and summary
-    headline="$(echo $content | xml2asc| xmllint --html --xpath "//h2[1]/text()" -)"
-    summary="$(echo $content | xml2asc | xmllint --html --xpath "//p[1]/text()" -)"
-    firstImage="$(echo $content | xml2asc | xmllint --html --xpath "string(//img[1]/@src)" -)"
+    headline="$(echo "$content" | xml2asc | xmllint --html --xpath "//h2[1]/text()" - 2>/dev/null)"
+    summary="$(echo "$content" | xml2asc | xmllint --html --xpath "//p[1]/text()" - 2>/dev/null)"
+    firstImage="$(echo "$content" | xml2asc | xmllint --html --xpath "string(//img[1]/@src)" - 2>/dev/null)"
 
-    if [ ! -z "${firstImage}" ]; then
+    if [ -n "$firstImage" ]; then
       firstImage="\"@type\": \"imageObject\", \"url\": \"$firstImage\""
     fi
 
-    # parse template for article
-    awk -v h="$headline" \
-        -v s="$summary" \
-        -v d="$dmod" \
-        -v i="$firstImage" \
-        -v c="$content" \
-        '{
-            gsub(/\{\{HEADLINE\}\}/,h);
-            gsub(/\{\{SUMMARY\}\}/,s);
-            gsub(/\{\{DMOD\}\}/,d);
-            gsub(/\{\{IMAGE\}\}/,i);
-            gsub(/\{\{CONTENT\}\}/,c);
-            print
-        }' \
-        "$templateF" | hxnormalize -e -l 85 > "$articleF"
+    # render article page
+    /root/rdrtpl.sh "$templateF" \
+      HEADLINE="$headline" \
+      SUMMARY="$summary" \
+      DMOD="$dmod" \
+      IMAGE="$firstImage" \
+      CONTENT="$content" \
+      | hxnormalize -e -l 85 > "$articleF"
 
-    # parse template for index file item
-    if [ $isPage != "_" ]; then
-      awk -v h="$headline" \
-          -v s="$summary" \
-          -v d="$dmod" \
-          -v i="$firstImage" \
-          -v a="$(basename "$articleF")" \
-          '{
-              gsub(/\{\{HEADLINE\}\}/,h);
-              gsub(/\{\{SUMMARY\}\}/,s);
-              gsub(/\{\{DMOD\}\}/,d);
-              gsub(/\{\{IMAGE\}\}/,i);
-              gsub(/\{\{ARTICLEF\}\}/,a);
-              print
-          }' \
-          "$indexItemF" >> "$tempF"
+    # update index if not a "page"
+    if [ "$isPage" != "_" ]; then
+      /root/rdrtpl.sh "$indexItemF" \
+        HEADLINE="$headline" \
+        SUMMARY="$summary" \
+        DMOD="$dmod" \
+        IMAGE="$firstImage" \
+        ARTICLEF="$(basename "$articleF")" \
+        >> "$tempF"
     fi
-  done
+done
 
   # add postample to index
   cat "$indexFooterF" >> "$tempF"
@@ -162,12 +151,10 @@ if [ $1 == "build" ]; then
   # beautify index file
   hxnormalize -e -l 85 "$tempF" > "$indexF"
 
-  # copy images and other files from source to publish
+  # copy assets from theme dir to publish
   # adds the ability to process images, styles & scripts
   # before putting them into the published folder
-  rsync -a "$imgSourceD" "$imgD"
-  rsync -a "$stylesSourceD" "$stylesD"
-  rsync -a "$scriptsSourceD" "$scriptsD"
+  rsync -a "$assetsSrcD" "$assetsD"
 
   # clean up
   rm "$tempF"

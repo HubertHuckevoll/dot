@@ -4,8 +4,8 @@ FROM debian:stable-slim
 RUN apt-get update && apt-get install -y \
     bash \
     markdown \
-    libxml2-utils \                # for xmllint
-    html-xml-utils \              # includes xml2asc, hxnormalize, etc.
+    libxml2-utils \
+    html-xml-utils \
     rsync \
     ca-certificates \
     curl \
@@ -14,14 +14,12 @@ RUN apt-get update && apt-get install -y \
 
 # Copy the dot script and templates into the image
 # Adjust this if your local directory structure differs
-COPY dot /usr/local/bin/dotgen.sh
-COPY templates/ /usr/local/share/dot/templates/
+COPY schachtel/dotgen.sh /root/dotgen.sh
+COPY schachtel/rdrtpl.sh /root/rdrtpl.sh
 
 # Make the script executable
-RUN chmod +x /usr/local/bin/dotgen.sh
-
-# Set default working directory inside the container
-WORKDIR /data
+RUN chmod +x /root/dotgen.sh
+RUN chmod +x /root/rdrtpl.sh
 
 # Use dot script as entrypoint
-ENTRYPOINT ["/usr/local/bin/dotgen.sh"]
+ENTRYPOINT ["/root/dotgen.sh"]
