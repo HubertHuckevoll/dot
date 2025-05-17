@@ -141,33 +141,36 @@ if [ "$commando" == "build" ]; then
   done
 
   # === Process Pages ===
-#  pageDirs=("$projectD/pages/"*/)
-#
-#  for dir in "${pageDirs[@]}"; do
-#    markdownF="${dir}article.md"
-#    [ -f "$markdownF" ] || continue
-#
-#    folderName=$(basename "$dir")
-#    dmod=$(date -d "@$(stat -c '%Y' "$markdownF")" +"%Y-%m-%d %H:%M")
-#    articleF="$publishedD/pages/${folderName}.html"
-#
-#    content=$(markdown "$markdownF")
-#    headline="$(echo "$content" | xml2asc | xmllint --html --xpath "//h2[1]/text()" - 2>/dev/null || true)"
-#    summary="$(echo "$content" | xml2asc | xmllint --html --xpath "//p[1]/text()" - 2>/dev/null || true)"
-#    firstImage="$(echo "$content" | xml2asc | xmllint --html --xpath "string(//img[1]/@src)" - 2>/dev/null || true)"
-#
-#    if [ -n "$firstImage" ]; then
-#      firstImage="\"@type\": \"imageObject\", \"url\": \"$firstImage\""
-#    fi
-#
-#    /root/rdrtpl.sh "$templateF" \
-#      HEADLINE="$headline" \
-#      SUMMARY="$summary" \
-#      DMOD="$dmod" \
-#      IMAGE="$firstImage" \
-#      CONTENT="$content" \
-#      | hxnormalize -e -l 85 > "$articleF"
-#  done
+  pageDirs=()
+  for dir in "$projectD/pages/"*/; do
+    [ -d "$dir" ] && pageDirs+=("$dir")
+  done
+
+  for dir in "${pageDirs[@]}"; do
+    markdownF="${dir}article.md"
+    [ -f "$markdownF" ] || continue
+
+    folderName=$(basename "$dir")
+    dmod=$(date -d "@$(stat -c '%Y' "$markdownF")" +"%Y-%m-%d %H:%M")
+    articleF="$publishedD/pages/${folderName}.html"
+
+    content=$(markdown "$markdownF")
+    headline="$(echo "$content" | xml2asc | xmllint --html --xpath "//h2[1]/text()" - 2>/dev/null || true)"
+    summary="$(echo "$content" | xml2asc | xmllint --html --xpath "//p[1]/text()" - 2>/dev/null || true)"
+    firstImage="$(echo "$content" | xml2asc | xmllint --html --xpath "string(//img[1]/@src)" - 2>/dev/null || true)"
+
+    if [ -n "$firstImage" ]; then
+      firstImage="\"@type\": \"imageObject\", \"url\": \"$firstImage\""
+    fi
+
+    /root/rdrtpl.sh "$templateF" \
+      HEADLINE="$headline" \
+      SUMMARY="$summary" \
+      DMOD="$dmod" \
+      IMAGE="$firstImage" \
+      CONTENT_B64="$(printf '%s' "$content" | base64 -w0)" \
+      | hxnormalize -e -l 85 > "$articleF"
+  done
 
   # Finalize index
   cat "$indexFooterF" >> "$tempF"
