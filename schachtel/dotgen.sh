@@ -122,7 +122,7 @@ if [ "$commando" == "build" ]; then
       firstImage="\"@type\": \"imageObject\", \"url\": \"$firstImage\""
     fi
 
-    /root/rdrtpl.sh "$templateF" \
+    /usr/local/bin/rdrtpl.sh "$templateF" \
       HEADLINE="$headline" \
       SUMMARY="$summary" \
       DMOD="$dmod" \
@@ -131,13 +131,20 @@ if [ "$commando" == "build" ]; then
       | hxnormalize -e -l 85 > "$articleF"
 
     # Render index item for article (not for pages!)
-    /root/rdrtpl.sh "$indexItemF" \
+    /usr/local/bin/rdrtpl.sh "$indexItemF" \
       HEADLINE="$headline" \
       SUMMARY="$summary" \
       DMOD="$dmod" \
       IMAGE="$firstImage" \
       ARTICLEF="articles/$(basename "$articleF")" \
       >> "$tempF"
+
+    # Copy additional files from article folder
+    srcAssets="$dir"
+    dstAssets="$publishedD/articles/$folderName/"
+    mkdir -p "$dstAssets"
+    rsync -a --exclude=article.md "$srcAssets" "$dstAssets"
+
   done
 
   # === Process Pages ===
@@ -163,13 +170,19 @@ if [ "$commando" == "build" ]; then
       firstImage="\"@type\": \"imageObject\", \"url\": \"$firstImage\""
     fi
 
-    /root/rdrtpl.sh "$templateF" \
+    /usr/local/bin/rdrtpl.sh "$templateF" \
       HEADLINE="$headline" \
       SUMMARY="$summary" \
       DMOD="$dmod" \
       IMAGE="$firstImage" \
       CONTENT_B64="$(printf '%s' "$content" | base64 -w0)" \
       | hxnormalize -e -l 85 > "$articleF"
+
+    srcAssets="$dir"
+    dstAssets="$publishedD/pages/$folderName/"
+    mkdir -p "$dstAssets"
+    rsync -a --exclude=article.md "$srcAssets" "$dstAssets"
+
   done
 
   # Finalize index
