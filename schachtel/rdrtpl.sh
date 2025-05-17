@@ -1,27 +1,29 @@
 #!/bin/bash
-# Usage: rdrtpl.sh template_file VAR1=value1 VAR2=value2 ...
+# Usage: rdrtpl.sh template_file VAR=value ...
 
-template_file="$1"
-shift
+template_file="$1"; shift
 
 awk_script='{
-    line = $0
-'
-
+  line = $0'
 for pair in "$@"; do
-    key="${pair%%=*}"
-    val="${pair#*=}"
+  key="${pair%%=*}"
+  val="${pair#*=}"
 
-    # Escape for awk
-    safe_val=$(printf '%s' "$val" | sed 's/\\/\\\\/g; s/"/\\"/g')
+  if [[ "$key" == *_B64 ]]; then
+    key="${key%_B64}"
+    val_decoded="$(printf '%s' "$val" | base64 -d)"
+  else
+    val_decoded="$val"
+  fi
 
-    awk_script+="
-    gsub(/\\{\\{$key\\}\\}/, \"$safe_val\", line)
-"
+  # Escape everything safely
+  val_escaped=$(printf '%s' "$val_decoded" | sed ':a;N;$!ba;s/\\/\\\\/g; s/"/\\"/g; s/\n/\\n/g')
+
+  awk_script+="
+  gsub(/\\{\\{$key\\}\\}/, \"$val_escaped\", line)"
 done
-
 awk_script+='
-    print line
+  print line
 }'
 
 awk "$awk_script" "$template_file"

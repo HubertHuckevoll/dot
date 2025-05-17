@@ -1,162 +1,179 @@
 #!/bin/bash
-# "dot" - a tiny static blog generator written with bash and linux tools
-# wrapped up in a container
+# dotgen.sh - "dot" static site generator (container version)
 
-# exit on any error
 set -euo pipefail
 set -x
 
-# store command
-commando=$1
+commando="${1:-}"
+shift || true
 
-# help if no commando given
+# Help
 if [ -z "$commando" ]; then
-  echo;
+  echo
   echo "[DOT - a tiny static blog generator]"
-  echo;
-  echo "Usage:";
-  echo "./dot init  ~/blogname";
-  echo "./dot new   ~/blogname articleName";
-  echo "./dot build ~/blogname ~/themeDir";
-  echo;
+  echo
+  echo "Usage:"
+  echo "./dotgen.sh init        <blogDir>"
+  echo "./dotgen.sh newArticle  <blogDir> <slug>"
+  echo "./dotgen.sh newPage     <blogDir> <slug>"
+  echo "./dotgen.sh build       <blogDir> <templateDir>"
   exit 0
 fi
 
-# init a new project structure
-if [ $commando == "init" ]; then
+# --- init ---
+if [ "$commando" == "init" ]; then
+  projectD="$1"
+  mkdir -p "$projectD/articles"
+  mkdir -p "$projectD/pages"
+  mkdir -p "${projectD}.published/articles"
+  mkdir -p "${projectD}.published/pages"
+  exit 0
+fi
 
-  projectD=$2
-  publishedD=$projectD".published/"
-  assetsD=$publishedD"assets/"
+# --- newArticle ---
+if [ "$commando" == "newArticle" ]; then
+  projectD="$1"
+  slug="$2"
+  timestamp=$(date +'%Y_%m_%d_%H_%M')
+  folder="$projectD/articles/${timestamp}_${slug}"
+  mkdir -p "$folder"
 
-  mkdir -p "$projectD"
-  mkdir -p "$publishedD"
-  mkdir -p "$assetsD"
+  {
+    echo "## $(echo "$slug" | tr '-' ' ' | sed 's/.*/\u&/')"
+    echo
+    echo "First paragraph of your article goes here."
+    echo
+  } > "$folder/article.md"
 
   exit 0
 fi
 
-# init a new article
-if [ $commando == "new" ]; then
-  folderName="${2}"/"$(date +'%Y_%m_%d_%H_%M')_${3}"
-  fname=$folderName"/article.md"
-  mkdir -p $folderName
-  touch $fname
+# --- newPage ---
+if [ "$commando" == "newPage" ]; then
+  projectD="$1"
+  slug="$2"
+  folder="$projectD/pages/$slug"
+  mkdir -p "$folder"
+
+  {
+    echo "## $(echo "$slug" | tr '-' ' ' | sed 's/.*/\u&/')"
+    echo
+    echo "This is the $slug page."
+    echo
+  } > "$folder/article.md"
+
   exit 0
 fi
 
-# build everything
-if [ $commando == "build" ]; then
-
-  if [ $# -lt 3 ]; then
-    echo "Usage: dot build <blogDir> <templateDir>"
+# --- build ---
+if [ "$commando" == "build" ]; then
+  if [ $# -lt 2 ]; then
+    echo "Usage: dotgen.sh build <blogDir> <templateDir>"
     exit 1
   fi
 
-  # folders
-  projectD=$2
-  templateD=$3"/html/"
-  assetsSrcD=$3"/assets/"
+  projectD="$1"
+  templateBase="$2"
+  templateD="$templateBase/html"
+  assetsSrcD="$templateBase/assets"
 
-  publishedD=$projectD".published/"
-  assetsD=$publishedD"assets/"
+  publishedD="${projectD}.published"
+  mkdir -p "$publishedD/articles" "$publishedD/pages" "$publishedD/assets"
 
-  # set up target files
-  indexF="$publishedD""index.html"
-  tempF="$publishedD""temp.html"
+  indexF="$publishedD/index.html"
+  tempF="$publishedD/temp.html"
 
-  # set up source template files
-  templateF="$templateD""article.html"
-  indexHeaderF="$templateD""indexPre.html"
-  indexItemF="$templateD""indexItem.html"
-  indexFooterF="$templateD""indexPost.html"
+  templateF="$templateD/article.html"
+  indexHeaderF="$templateD/indexPre.html"
+  indexItemF="$templateD/indexItem.html"
+  indexFooterF="$templateD/indexPost.html"
 
-  # make sure html folder is clean before we re-create
-  rm "$publishedD"*.html > /dev/null 2>&1
+  # Clean published HTMLs
+  rm -f "$publishedD/"*.html > /dev/null 2>&1
 
-  # add preample to index
+  # Start index
   cat "$indexHeaderF" > "$tempF"
 
-  # read markdown article folders
+  # === Process Articles ===
   shopt -s nullglob
-  articleDirs=("$projectD"*/)
+  articleDirs=("$projectD/articles/"*/)
+  echo "Found articleDirs:"
+  printf ' - %s\n' "${articleDirs[@]}"
 
-  # sort newest first (reverse)
+
   IFS=$'\n' sortedArticleDirs=($(printf "%s\n" "${articleDirs[@]}" | sort -r))
 
   for dir in "${sortedArticleDirs[@]}"; do
     markdownF="${dir}article.md"
-
-    # skip if article.md not found
     [ -f "$markdownF" ] || continue
 
-    echo "Processing '$markdownF'"
-
-    # filename is the folder name without trailing slash
     folderName=$(basename "$dir")
+    date_time=$(echo "$folderName" | awk -F_ '{print $1 "-" $2 "-" $3 "T" $4 ":" $5}')
+    dmod=$(date -d "$date_time" +"%Y-%m-%d %H:%M")
 
-    # determine if it's a page (starts with '_')
-    isPage=${folderName:0:1}
+    articleF="$publishedD/articles/${folderName}.html"
 
-    if [ "$isPage" != "_" ]; then
-      # extract date and time from folder name (e.g. 2025_05_17_14_36)
-      year=${folderName:0:4}
-      month=${folderName:5:2}
-      day=${folderName:8:2}
-      hour=${folderName:11:2}
-      minute=${folderName:14:2}
-      dmod=$(date -d "$year-$month-$day $hour:$minute" +"%Y-%m-%d %H:%M")
-    else
-      dmod=$(date -d "@$(stat -c '%Y' "$markdownF")" +"%Y-%m-%d %H:%M")
-    fi
-
-    # output file
-    articleF="$publishedD${folderName}.html"
-
-    # do the md => html conversion
     content=$(markdown "$markdownF")
-
-    # extract headline and summary
-    headline="$(echo "$content" | xml2asc | xmllint --html --xpath "//h2[1]/text()" - 2>/dev/null)"
-    summary="$(echo "$content" | xml2asc | xmllint --html --xpath "//p[1]/text()" - 2>/dev/null)"
-    firstImage="$(echo "$content" | xml2asc | xmllint --html --xpath "string(//img[1]/@src)" - 2>/dev/null)"
+    headline="$(echo "$content" | xml2asc | xmllint --html --xpath "//h2[1]/text()" - 2>/dev/null || true)"
+    summary="$(echo "$content" | xml2asc | xmllint --html --xpath "//p[1]/text()" - 2>/dev/null || true)"
+    firstImage="$(echo "$content" | xml2asc | xmllint --html --xpath "string(//img[1]/@src)" - 2>/dev/null || true)"
 
     if [ -n "$firstImage" ]; then
       firstImage="\"@type\": \"imageObject\", \"url\": \"$firstImage\""
     fi
 
-    # render article page
     /root/rdrtpl.sh "$templateF" \
       HEADLINE="$headline" \
       SUMMARY="$summary" \
       DMOD="$dmod" \
       IMAGE="$firstImage" \
-      CONTENT="$content" \
+      CONTENT_B64="$(printf '%s' "$content" | base64 -w0)" \
       | hxnormalize -e -l 85 > "$articleF"
 
-    # update index if not a "page"
-    if [ "$isPage" != "_" ]; then
-      /root/rdrtpl.sh "$indexItemF" \
-        HEADLINE="$headline" \
-        SUMMARY="$summary" \
-        DMOD="$dmod" \
-        IMAGE="$firstImage" \
-        ARTICLEF="$(basename "$articleF")" \
-        >> "$tempF"
-    fi
-done
+    # Render index item for article (not for pages!)
+    /root/rdrtpl.sh "$indexItemF" \
+      HEADLINE="$headline" \
+      SUMMARY="$summary" \
+      DMOD="$dmod" \
+      IMAGE="$firstImage" \
+      ARTICLEF="articles/$(basename "$articleF")" \
+      >> "$tempF"
+  done
 
-  # add postample to index
+  # === Process Pages ===
+#  pageDirs=("$projectD/pages/"*/)
+#
+#  for dir in "${pageDirs[@]}"; do
+#    markdownF="${dir}article.md"
+#    [ -f "$markdownF" ] || continue
+#
+#    folderName=$(basename "$dir")
+#    dmod=$(date -d "@$(stat -c '%Y' "$markdownF")" +"%Y-%m-%d %H:%M")
+#    articleF="$publishedD/pages/${folderName}.html"
+#
+#    content=$(markdown "$markdownF")
+#    headline="$(echo "$content" | xml2asc | xmllint --html --xpath "//h2[1]/text()" - 2>/dev/null || true)"
+#    summary="$(echo "$content" | xml2asc | xmllint --html --xpath "//p[1]/text()" - 2>/dev/null || true)"
+#    firstImage="$(echo "$content" | xml2asc | xmllint --html --xpath "string(//img[1]/@src)" - 2>/dev/null || true)"
+#
+#    if [ -n "$firstImage" ]; then
+#      firstImage="\"@type\": \"imageObject\", \"url\": \"$firstImage\""
+#    fi
+#
+#    /root/rdrtpl.sh "$templateF" \
+#      HEADLINE="$headline" \
+#      SUMMARY="$summary" \
+#      DMOD="$dmod" \
+#      IMAGE="$firstImage" \
+#      CONTENT="$content" \
+#      | hxnormalize -e -l 85 > "$articleF"
+#  done
+
+  # Finalize index
   cat "$indexFooterF" >> "$tempF"
-
-  # beautify index file
   hxnormalize -e -l 85 "$tempF" > "$indexF"
-
-  # copy assets from theme dir to publish
-  # adds the ability to process images, styles & scripts
-  # before putting them into the published folder
-  rsync -a "$assetsSrcD" "$assetsD"
-
-  # clean up
   rm "$tempF"
+
+  # Copy assets
+  rsync -a "$assetsSrcD/" "$publishedD/assets/"
 fi
