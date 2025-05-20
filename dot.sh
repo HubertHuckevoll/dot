@@ -18,7 +18,6 @@ fi
 # Aufruf des Containers
 sudo podman run --rm \
   --user "$(id -u):$(id -g)" \
-  --security-opt label=disable \
   -v "$BLOGDIR":/mnt/blog:z \
   -v "$PUBLISHDIR":/mnt/published:z \
   -v "$THEMEDIR":/mnt/theme:ro,z \
