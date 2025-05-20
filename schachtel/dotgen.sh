@@ -44,10 +44,10 @@ if [ -z "$commando" ]; then
   echo "[DOT - a tiny static blog generator]"
   echo
   echo "Usage:"
-  echo "./dotgen.sh init        /blog"
-  echo "./dotgen.sh newArticle  /blog slug"
-  echo "./dotgen.sh newPage     /blog slug"
-  echo "./dotgen.sh build       /blog /theme"
+  echo "./dot init     ~/blog"
+  echo "./dot article  ~/blog slug"
+  echo "./dot page     ~/blog slug"
+  echo "./dot build    ~/blog [~/theme]"
   exit 0
 fi
 
@@ -59,7 +59,7 @@ if [ "$commando" == "init" ]; then
 fi
 
 # === NEW ARTICLE ===
-if [ "$commando" == "newArticle" ]; then
+if [ "$commando" == "article" ]; then
   slug="$2"
   timestamp=$(date +'%Y_%m_%d_%H_%M')
   folder="$articlesDir/${timestamp}_${slug}"
@@ -73,7 +73,7 @@ if [ "$commando" == "newArticle" ]; then
 fi
 
 # === NEW PAGE ===
-if [ "$commando" == "newPage" ]; then
+if [ "$commando" == "page" ]; then
   slug="$2"
   folder="$pagesDir/$slug"
   mkdir -p "$folder"
