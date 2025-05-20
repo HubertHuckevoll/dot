@@ -159,4 +159,6 @@ if [ "$commando" == "build" ]; then
   hxnormalize -e -l 85 "$indexTemp" > "$indexFile"
   rm "$indexTemp"
   rsync -a "$assetsSrcD/" "$publishedAssets/"
+
+  exit 0
 fi

@@ -1,20 +1,25 @@
 #!/bin/bash
-# dot.sh — wrapper for dotgen container
+# Wrapper to run dotgen inside a Podman container
 
-set -euo pipefail
+set -e
 
-COMMAND="${1:-}"
-BLOGDIR="${2:-}"
-THEMEDIR="${3:-$HOME/dot/theme}"
+CMD="$1"
+BLOGDIR="$2"
 PUBLISHDIR="${BLOGDIR}.published"
 
-BLOGDIR=$(realpath "$BLOGDIR")
-PUBLISHDIR=$(realpath "$PUBLISHDIR" 2>/dev/null || echo "$PUBLISHDIR")
-THEMEDIR=$(realpath "$THEMEDIR")
+# Optional third argument (theme)
+THEMEDIR="${3:-$HOME/dot/theme}"
 
-podman run --rm \
+# Wenn der Befehl "init" ist, müssen BLOGDIR und PUBLISHDIR existieren
+if [[ "$CMD" == "init" ]]; then
+  mkdir -p "$BLOGDIR" "$PUBLISHDIR"
+fi
+
+# Aufruf des Containers
+sudo podman run --rm \
   --user "$(id -u):$(id -g)" \
-  -v "$BLOGDIR:/mnt/blog:Z" \
-  -v "$PUBLISHDIR:/mnt/published:Z" \
-  -v "$THEMEDIR:/mnt/theme:Z" \
-  dotgen "$COMMAND" /mnt/blog /mnt/published /mnt/theme "${@:3}"
+  --security-opt label=disable \
+  -v "$BLOGDIR":/mnt/blog:z \
+  -v "$PUBLISHDIR":/mnt/published:z \
+  -v "$THEMEDIR":/mnt/theme:ro,z \
+  dotgen "$@"
