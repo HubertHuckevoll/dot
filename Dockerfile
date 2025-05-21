@@ -9,15 +9,16 @@ RUN apt-get update && apt-get install -y \
     rsync \
     ca-certificates \
     curl \
+    php-cli \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install scripts to a neutral location
 COPY schachtel/dotgen.sh /usr/local/bin/dotgen.sh
-COPY schachtel/rdrtpl.sh /usr/local/bin/rdrtpl.sh
+COPY schachtel/rdrtpl.php /usr/local/bin/rdrtpl.php
 
 # Make them executable
 RUN chmod +x /usr/local/bin/dotgen.sh
-RUN chmod +x /usr/local/bin/rdrtpl.sh
+RUN chmod +x /usr/local/bin/rdrtpl.php
 
 # Use dotgen.sh as entrypoint
 ENTRYPOINT ["/usr/local/bin/dotgen.sh"]

@@ -30,7 +30,7 @@ indexFile="$publishedRoot/index.html"
 indexTemp="$publishedRoot/index.temp.html"
 
 # External tools
-tplTool="/usr/local/bin/rdrtpl.sh"
+tplTool="/usr/local/bin/rdrtpl.php"
 
 # Markdown content
 markdownFile="article.md"
@@ -85,6 +85,11 @@ if [ "$commando" == "page" ]; then
   exit 0
 fi
 
+# === BASE64 ENCODE ===
+base64_encode() {
+  printf '%s' "$1" | base64 -w0
+}
+
 # === BUILD ===
 if [ "$commando" == "build" ]; then
   mkdir -p "$publishedArticles" "$publishedPages" "$publishedAssets"
@@ -110,19 +115,19 @@ if [ "$commando" == "build" ]; then
     [ -n "$image" ] && image="\"@type\": \"imageObject\", \"url\": \"$image\""
 
     $tplTool "$templateArticle" \
-      HEADLINE="$headline" \
-      SUMMARY="$summary" \
-      DMOD="$dmod" \
-      IMAGE="$image" \
-      CONTENT_B64="$(printf '%s' "$content" | base64 -w0)" \
+      HEADLINE="$(base64_encode "$headline")" \
+      SUMMARY="$(base64_encode "$summary")" \
+      DMOD="$(base64_encode "$dmod")" \
+      IMAGE="$(base64_encode "$image")" \
+      CONTENT="$(base64_encode "$content")" \
       | hxnormalize -e -l 85 > "$outputFile"
 
     $tplTool "$templateIndexItem" \
-      HEADLINE="$headline" \
-      SUMMARY="$summary" \
-      DMOD="$dmod" \
-      IMAGE="$image" \
-      ARTICLEF="articles/$(basename "$outputFile")" \
+      HEADLINE="$(base64_encode "$headline")" \
+      SUMMARY="$(base64_encode "$summary")" \
+      DMOD="$(base64_encode "$dmod")" \
+      IMAGE="$(base64_encode "$image")" \
+      ARTICLEF="$(base64_encode "articles/$(basename "$outputFile")")" \
       >> "$indexTemp"
 
     rsync -a --exclude="$markdownFile" "$dir" "$publishedArticles/$folderName/"
@@ -145,11 +150,11 @@ if [ "$commando" == "build" ]; then
     [ -n "$image" ] && image="\"@type\": \"imageObject\", \"url\": \"$image\""
 
     $tplTool "$templateArticle" \
-      HEADLINE="$headline" \
-      SUMMARY="$summary" \
-      DMOD="$dmod" \
-      IMAGE="$image" \
-      CONTENT_B64="$(printf '%s' "$content" | base64 -w0)" \
+      HEADLINE="$(base64_encode "$headline")" \
+      SUMMARY="$(base64_encode "$summary")" \
+      DMOD="$(base64_encode "$dmod")" \
+      IMAGE="$(base64_encode "$image")" \
+      CONTENT="$(base64_encode "$content")" \
       | hxnormalize -e -l 85 > "$outputFile"
 
     rsync -a --exclude="$markdownFile" "$dir" "$publishedPages/$folderName/"
