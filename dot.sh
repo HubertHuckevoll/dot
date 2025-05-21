@@ -1,24 +1,40 @@
 #!/bin/bash
-# Wrapper to run dotgen inside a Podman container
+# dot.sh - Fully containerized dotgen wrapper
 
-set -e
+set -euo pipefail
 
+IMAGE="dotgen"
 CMD="$1"
-BLOGDIR="$2"
-PUBLISHDIR="${BLOGDIR}.published"
+BLOGDIR="$(realpath "$2")"
+BLOGNAME="$(basename "$BLOGDIR")"
+THEMEDIR="$(realpath "${3:-$HOME/dot/theme}")"
+TMP_CONTAINER_ID=""
 
-# Optional third argument (theme)
-THEMEDIR="${3:-$HOME/dot/theme}"
+# Create a temporary container
+TMP_CONTAINER_ID=$(podman create "$IMAGE" "$CMD" "/mnt/blog" "${@:3}")
 
-# Wenn der Befehl "init" ist, müssen BLOGDIR und PUBLISHDIR existieren
-if [[ "$CMD" == "init" ]]; then
-  mkdir -p "$BLOGDIR" "$PUBLISHDIR"
+# Copy blog into container (if it exists)
+if [[ -d "$BLOGDIR" ]]; then
+  podman cp "$BLOGDIR" "$TMP_CONTAINER_ID:/mnt/blog"
 fi
 
-# Aufruf des Containers
-sudo podman run --rm \
-  --user "$(id -u):$(id -g)" \
-  -v "$BLOGDIR":/mnt/blog:z \
-  -v "$PUBLISHDIR":/mnt/published:z \
-  -v "$THEMEDIR":/mnt/theme:ro,z \
-  dotgen "$@"
+# Copy theme into container if it exists and command is `build`
+if [[ "$CMD" == "build" && -d "$THEMEDIR" ]]; then
+  podman cp "$THEMEDIR" "$TMP_CONTAINER_ID:/mnt/theme"
+fi
+
+# Start container
+podman start -a "$TMP_CONTAINER_ID"
+
+# Copy blog folder back from container
+rm -rf "$BLOGDIR"
+podman cp "$TMP_CONTAINER_ID:/mnt/blog" "$BLOGDIR"
+
+# Copy published folder back if it was generated
+if [[ "$CMD" == "build" ]]; then
+  rm -rf "${BLOGDIR}.published"
+  podman cp "$TMP_CONTAINER_ID:/mnt/published" "${BLOGDIR}.published"
+fi
+
+# Clean up container
+podman rm "$TMP_CONTAINER_ID"
