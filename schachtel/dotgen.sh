@@ -106,7 +106,8 @@ if [ "$commando" == "build" ]; then
 
     folderName=$(basename "$dir")
     dmod=$(date -d "$(echo "$folderName" | awk -F_ '{print $1 "-" $2 "-" $3 "T" $4 ":" $5}')" +"%Y-%m-%d %H:%M")
-    outputFile="$publishedArticles/$folderName.html"
+    mkdir -p "$publishedArticles/$folderName"
+    outputFile="$publishedArticles/$folderName/$folderName.html"
 
     content=$(markdown "$file")
     headline=$(echo "$content" | xml2asc | xmllint --html --xpath "//h2[1]/text()" - 2>/dev/null || true)
@@ -141,7 +142,8 @@ if [ "$commando" == "build" ]; then
 
     folderName=$(basename "$dir")
     dmod=$(date -d "@$(stat -c '%Y' "$file")" +"%Y-%m-%d %H:%M")
-    outputFile="$publishedPages/$folderName.html"
+    mkdir -p "$publishedPages/$folderName"
+    outputFile="$publishedPages/$folderName/$folderName.html"
 
     content=$(markdown "$file")
     headline=$(echo "$content" | xml2asc | xmllint --html --xpath "//h2[1]/text()" - 2>/dev/null || true)
