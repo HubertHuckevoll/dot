@@ -128,7 +128,7 @@ if [ "$commando" == "build" ]; then
       SUMMARY="$(base64_encode "$summary")" \
       DMOD="$(base64_encode "$dmod")" \
       IMAGE="$(base64_encode "$image")" \
-      ARTICLEF="$(base64_encode "articles/$(basename "$outputFile")")" \
+      ARTICLEF="$(base64_encode "articles/$folderName/$folderName.html")" \
       >> "$indexTemp"
 
     rsync -a --exclude="$markdownFile" "$dir" "$publishedArticles/$folderName/"
