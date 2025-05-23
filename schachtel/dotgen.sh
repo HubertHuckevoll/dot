@@ -69,7 +69,7 @@ if [ "$commando" == "article" ]; then
     echo "## $(echo "$slug" | tr '-' ' ' | sed 's/.*/\u&/')"
     echo
     echo "First paragraph of your article goes here."
-    echo "Article folder is $folder"
+    echo "Article folder is at $folder"
   } > "$folder/$markdownFile"
   exit 0
 fi
