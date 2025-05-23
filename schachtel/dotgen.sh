@@ -24,6 +24,7 @@ templateArticle="$templateHTML/article.html"
 templateIndexPre="$templateHTML/indexPre.html"
 templateIndexItem="$templateHTML/indexItem.html"
 templateIndexPost="$templateHTML/indexPost.html"
+templatePage="$templateHTML/page.html"
 
 # Index output
 indexFile="$publishedRoot/index.html"
@@ -151,7 +152,7 @@ if [ "$commando" == "build" ]; then
     image=$(echo "$content" | xml2asc | xmllint --html --xpath "string(//img[1]/@src)" - 2>/dev/null || true)
     [ -n "$image" ] && image="\"@type\": \"imageObject\", \"url\": \"$image\""
 
-    $tplTool "$templateArticle" \
+    $tplTool "$templatePage" \
       HEADLINE="$(base64_encode "$headline")" \
       SUMMARY="$(base64_encode "$summary")" \
       DMOD="$(base64_encode "$dmod")" \
