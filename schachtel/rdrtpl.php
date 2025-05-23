@@ -19,7 +19,7 @@ for ($i = 2; $i < $argc; $i++) {
     if (preg_match('/^([A-Z0-9_]+)=(.*)$/', $argv[$i], $matches)) {
         $key = $matches[1];
         $decoded = base64_decode($matches[2]);
-        $vars["{{$key}}"] = $decoded;
+        $vars['{{'.$key.'}}'] = $decoded;
     }
 }
 
