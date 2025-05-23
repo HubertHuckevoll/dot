@@ -9,17 +9,17 @@ if ($argc < 2) exit(1);
 
 // get template file
 $templateFile = $argv[1];
-if (!file_exists($templateFile)) exit(1);
+if (!file_exists(filename: $templateFile)) exit(1);
 
 // get templete contents
-$template = file_get_contents($templateFile);
+$template = file_get_contents(filename: $templateFile);
 
 // Parse all VAR=base64string
 $vars = [];
 for ($i = 2; $i < $argc; $i++) {
-    if (preg_match('/^([A-Z0-9_]+)=(.*)$/', $argv[$i], $matches)) {
+    if (preg_match(pattern: '/^([A-Z0-9_]+)=(.*)$/', subject: $argv[$i], matches: $matches)) {
         $key = $matches[1];
-        $decoded = base64_decode($matches[2]);
+        $decoded = base64_decode(string: $matches[2]);
         $vars['{{'.$key.'}}'] = $decoded;
     }
 }
