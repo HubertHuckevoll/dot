@@ -52,14 +52,14 @@ if [ -z "$commando" ]; then
   exit 0
 fi
 
-# === INIT ===
+# Init
 if [ "$commando" == "init" ]; then
   mkdir -p "$articlesDir" "$pagesDir"
   mkdir -p "$publishedArticles" "$publishedPages" "$publishedAssets"
   exit 0
 fi
 
-# === NEW ARTICLE ===
+# New Article
 if [ "$commando" == "article" ]; then
   slug="$2"
   timestamp=$(date +'%Y_%m_%d_%H_%M')
@@ -74,7 +74,7 @@ if [ "$commando" == "article" ]; then
   exit 0
 fi
 
-# === NEW PAGE ===
+# New Page
 if [ "$commando" == "page" ]; then
   slug="$2"
   folder="$pagesDir/$slug"
@@ -87,18 +87,20 @@ if [ "$commando" == "page" ]; then
   exit 0
 fi
 
-# === BASE64 ENCODE ===
+# Base64 Encoding
 base64_encode() {
   printf '%s' "$1" | base64 -w0
 }
 
-# === BUILD ===
+# Build
 if [ "$commando" == "build" ]; then
   mkdir -p "$publishedArticles" "$publishedPages" "$publishedAssets"
   rm -f "$publishedRoot"/*.html > /dev/null 2>&1
   cat "$templateIndexPre" > "$indexTemp"
 
   shopt -s nullglob
+
+  # Build articles first...
   articleFolders=("$articlesDir/"*/)
   IFS=$'\n' sortedArticles=($(printf "%s\n" "${articleFolders[@]}" | sort -r))
 
@@ -136,7 +138,7 @@ if [ "$commando" == "build" ]; then
     rsync -a --exclude="$markdownFile" "$dir" "$publishedArticles/$folderName/"
   done
 
-  # === PAGES ===
+  # ...now pages
   pageFolders=("$pagesDir/"*/)
   for dir in "${pageFolders[@]}"; do
     file="$dir$markdownFile"
@@ -164,6 +166,7 @@ if [ "$commando" == "build" ]; then
     rsync -a --exclude="$markdownFile" "$dir" "$publishedPages/$folderName/"
   done
 
+  # Copy files / attachments
   cat "$templateIndexPost" >> "$indexTemp"
   hxnormalize -e -l 85 "$indexTemp" > "$indexFile"
   rm "$indexTemp"
