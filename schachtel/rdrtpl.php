@@ -1,7 +1,8 @@
 #!/usr/bin/env php
 
 <?php
-// fwrite(STDERR, "Usage: rdrtpl.php template.html VAR1=base64(VAR1) VAR2=base64(VAR2) ...\n");
+// tiny templater
+// Usage: rdrtpl.php template.html VAR1=base64(VAR1) VAR2=base64(VAR2) ...
 
 // enough paramters
 if ($argc < 2) exit(1);

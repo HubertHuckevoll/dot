@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     curl \
     php-cli \
+    imagemagick \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install scripts to a neutral location

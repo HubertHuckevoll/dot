@@ -107,7 +107,7 @@ if [ "$commando" == "build" ]; then
     folderName=$(basename "$dir")
     dmod=$(date -d "$(echo "$folderName" | awk -F_ '{print $1 "-" $2 "-" $3 "T" $4 ":" $5}')" +"%Y-%m-%d %H:%M")
     mkdir -p "$publishedArticles/$folderName"
-    outputFile="$publishedArticles/$folderName/$folderName.html"
+    outputFile="$publishedArticles/$folderName.html"
 
     content=$(markdown "$file")
     headline=$(echo "$content" | xml2asc | xmllint --html --xpath "//h2[1]/text()" - 2>/dev/null || true)
@@ -128,7 +128,7 @@ if [ "$commando" == "build" ]; then
       SUMMARY="$(base64_encode "$summary")" \
       DMOD="$(base64_encode "$dmod")" \
       IMAGE="$(base64_encode "$image")" \
-      ARTICLEF="$(base64_encode "articles/$folderName/$folderName.html")" \
+      ARTICLEF="$(base64_encode "articles/$folderName.html")" \
       >> "$indexTemp"
 
     rsync -a --exclude="$markdownFile" "$dir" "$publishedArticles/$folderName/"
@@ -143,7 +143,7 @@ if [ "$commando" == "build" ]; then
     folderName=$(basename "$dir")
     dmod=$(date -d "@$(stat -c '%Y' "$file")" +"%Y-%m-%d %H:%M")
     mkdir -p "$publishedPages/$folderName"
-    outputFile="$publishedPages/$folderName/$folderName.html"
+    outputFile="$publishedPages/$folderName.html"
 
     content=$(markdown "$file")
     headline=$(echo "$content" | xml2asc | xmllint --html --xpath "//h2[1]/text()" - 2>/dev/null || true)
