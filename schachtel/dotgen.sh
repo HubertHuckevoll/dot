@@ -2,7 +2,7 @@
 # dotgen.sh - "dot" static site generator (container version)
 
 set -euo pipefail
-set -x
+trap 'echo "Error at line $LINENO: $BASH_COMMAND"' ERR
 
 # Base mount points inside container
 blogRoot="/mnt/blog"
@@ -36,6 +36,23 @@ tplTool="/usr/local/bin/rdrtpl.php"
 # Markdown content
 markdownFile="article.md"
 
+# Helpers
+sanitize_slug() {
+  echo "$1" \
+    | tr '[:upper:]' '[:lower:]' \
+    | sed 's/[^a-z0-9]/-/g' \
+    | sed 's/-\{2,\}/-/g' \
+    | sed 's/^-//' \
+    | sed 's/-$//'
+}
+
+# Base64 Encoding
+base64_encode() {
+  printf '%s' "$1" | base64 -w0
+}
+
+# Now for processing the commands
+
 # Command
 commando="${1:-}"
 shift || true
@@ -61,36 +78,33 @@ fi
 
 # New Article
 if [ "$commando" == "article" ]; then
-  slug="$2"
+  raw_slug="$2"
+  slug=$(sanitize_slug "$raw_slug")
   timestamp=$(date +'%Y_%m_%d_%H_%M')
   folder="$articlesDir/${timestamp}_${slug}"
   mkdir -p "$folder"
   {
-    echo "## $(echo "$slug" | tr '-' ' ' | sed 's/.*/\u&/')"
+    echo "## $(echo "$raw_slug" | tr '-' ' ' | sed 's/.*/\u&/')"
     echo
     echo "First paragraph of your article goes here."
-    echo "Article folder is at $folder"
+    echo "This is the $slug article at $folder"
   } > "$folder/$markdownFile"
   exit 0
 fi
 
 # New Page
 if [ "$commando" == "page" ]; then
-  slug="$2"
+  raw_slug="$2"
+  slug=$(sanitize_slug "$raw_slug")
   folder="$pagesDir/$slug"
   mkdir -p "$folder"
   {
-    echo "## $(echo "$slug" | tr '-' ' ' | sed 's/.*/\u&/')"
+    echo "## $(echo "$raw_slug" | tr '-' ' ' | sed 's/.*/\u&/')"
     echo
     echo "This is the $slug page at $folder"
   } > "$folder/$markdownFile"
   exit 0
 fi
-
-# Base64 Encoding
-base64_encode() {
-  printf '%s' "$1" | base64 -w0
-}
 
 # Build
 if [ "$commando" == "build" ]; then
