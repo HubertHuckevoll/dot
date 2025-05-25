@@ -21,44 +21,36 @@ templateHTML="$themeRoot/html"
 assetsSrcD="$themeRoot/assets"
 
 templateArticle="$templateHTML/article.html"
+templatePage="$templateHTML/page.html"
 templateIndexPre="$templateHTML/indexPre.html"
 templateIndexItem="$templateHTML/indexItem.html"
 templateIndexPost="$templateHTML/indexPost.html"
-templatePage="$templateHTML/page.html"
 
-# Index output
+# Output
 indexFile="$publishedRoot/index.html"
 indexTemp="$publishedRoot/index.temp.html"
 
-# External tools
+# Tools
 tplTool="/usr/local/bin/rdrtpl.php"
-
-# Markdown content
 markdownFile="article.md"
 
 # Helpers
 sanitize_slug() {
-  echo "$1" \
-    | tr '[:upper:]' '[:lower:]' \
-    | sed 's/[^a-z0-9]/-/g' \
-    | sed 's/-\{2,\}/-/g' \
-    | sed 's/^-//' \
-    | sed 's/-$//'
+  echo "$1" | tr '[:upper:]' '[:lower:]' \
+           | sed 's/[^a-z0-9]/-/g' \
+           | sed 's/-\{2,\}/-/g' \
+           | sed 's/^-//' | sed 's/-$//'
 }
 
-# Base64 Encoding
 base64_encode() {
   printf '%s' "$1" | base64 -w0
 }
 
-# Now for processing the commands
-
-# Command
+# === Command ===
 commando="${1:-}"
 shift || true
 
 if [ -z "$commando" ]; then
-  echo
   echo "[DOT - a tiny static blog generator]"
   echo
   echo "Usage:"
@@ -69,14 +61,14 @@ if [ -z "$commando" ]; then
   exit 0
 fi
 
-# Init
+# === INIT ===
 if [ "$commando" == "init" ]; then
   mkdir -p "$articlesDir" "$pagesDir"
   mkdir -p "$publishedArticles" "$publishedPages" "$publishedAssets"
   exit 0
 fi
 
-# New Article
+# === NEW ARTICLE ===
 if [ "$commando" == "article" ]; then
   raw_slug="$2"
   slug=$(sanitize_slug "$raw_slug")
@@ -87,12 +79,11 @@ if [ "$commando" == "article" ]; then
     echo "## $(echo "$raw_slug" | tr '-' ' ' | sed 's/.*/\u&/')"
     echo
     echo "First paragraph of your article goes here."
-    echo "This is the $slug article at $folder"
   } > "$folder/$markdownFile"
   exit 0
 fi
 
-# New Page
+# === NEW PAGE ===
 if [ "$commando" == "page" ]; then
   raw_slug="$2"
   slug=$(sanitize_slug "$raw_slug")
@@ -101,90 +92,84 @@ if [ "$commando" == "page" ]; then
   {
     echo "## $(echo "$raw_slug" | tr '-' ' ' | sed 's/.*/\u&/')"
     echo
-    echo "This is the $slug page at $folder"
+    echo "This is the $slug page."
   } > "$folder/$markdownFile"
   exit 0
 fi
 
-# Build
+# === BUILD ===
 if [ "$commando" == "build" ]; then
   mkdir -p "$publishedArticles" "$publishedPages" "$publishedAssets"
   rm -f "$publishedRoot"/*.html > /dev/null 2>&1
   cat "$templateIndexPre" > "$indexTemp"
 
-  shopt -s nullglob
+  indexEntries=()
 
-  # Build articles first...
-  articleFolders=("$articlesDir/"*/)
-  IFS=$'\n' sortedArticles=($(printf "%s\n" "${articleFolders[@]}" | sort -r))
+  for kind in article page; do
+    if [ "$kind" == "article" ]; then
+      sourceFolders=("$articlesDir/"*/)
+      targetBase="$publishedArticles"
+      template="$templateArticle"
+    else
+      sourceFolders=("$pagesDir/"*/)
+      targetBase="$publishedPages"
+      template="$templatePage"
+    fi
 
-  for dir in "${sortedArticles[@]}"; do
-    file="$dir$markdownFile"
-    [ -f "$file" ] || continue
+    for dir in "${sourceFolders[@]}"; do
+      file="$dir$markdownFile"
+      [ -f "$file" ] || continue
 
-    folderName=$(basename "$dir")
-    dmod=$(date -d "$(echo "$folderName" | awk -F_ '{print $1 "-" $2 "-" $3 "T" $4 ":" $5}')" +"%Y-%m-%d %H:%M")
-    mkdir -p "$publishedArticles/$folderName"
-    outputFile="$publishedArticles/$folderName.html"
+      folderName=$(basename "$dir")
+      if [ "$kind" == "article" ]; then
+        dmod=$(date -d "$(echo "$folderName" | awk -F_ '{print $1 "-" $2 "-" $3 "T" $4 ":" $5}')" +"%Y-%m-%d %H:%M")
+      else
+        dmod=$(date -d "@$(stat -c '%Y' "$file")" +"%Y-%m-%d %H:%M")
+      fi
 
-    content=$(markdown "$file")
-    headline=$(echo "$content" | xml2asc | xmllint --html --xpath "//h2[1]/text()" - 2>/dev/null || true)
-    summary=$(echo "$content" | xml2asc | xmllint --html --xpath "//p[1]/text()" - 2>/dev/null || true)
-    image=$(echo "$content" | xml2asc | xmllint --html --xpath "string(//img[1]/@src)" - 2>/dev/null || true)
-    [ -n "$image" ] && image="\"@type\": \"imageObject\", \"url\": \"$image\""
+      htmlFile="$targetBase/$folderName.html"
+      assetFolder="$targetBase/$folderName"
 
-    $tplTool "$templateArticle" \
-      HEADLINE="$(base64_encode "$headline")" \
-      SUMMARY="$(base64_encode "$summary")" \
-      DMOD="$(base64_encode "$dmod")" \
-      IMAGE="$(base64_encode "$image")" \
-      CONTENT="$(base64_encode "$content")" \
-      | hxnormalize -e -l 85 > "$outputFile"
+      content=$(markdown "$file")
+      headline=$(echo "$content" | xml2asc | xmllint --html --xpath "//h2[1]/text()" - 2>/dev/null || true)
+      summary=$(echo "$content" | xml2asc | xmllint --html --xpath "//p[1]/text()" - 2>/dev/null || true)
+      image=$(echo "$content" | xml2asc | xmllint --html --xpath "string(//img[1]/@src)" - 2>/dev/null || true)
+      [ -n "$image" ] && image="\"@type\": \"imageObject\", \"url\": \"$image\""
 
+      $tplTool "$template" \
+        HEADLINE="$(base64_encode "$headline")" \
+        SUMMARY="$(base64_encode "$summary")" \
+        DMOD="$(base64_encode "$dmod")" \
+        IMAGE="$(base64_encode "$image")" \
+        CONTENT="$(base64_encode "$content")" \
+        | hxnormalize -e -l 85 > "$htmlFile"
+
+      # Copy assets into /articleName/
+      mkdir -p "$assetFolder"
+      rsync -a --exclude="$markdownFile" "$dir" "$assetFolder/"
+
+      if [ "$kind" == "article" ]; then
+        indexEntries+=("$folderName|$headline|$summary|$dmod|$image")
+      fi
+    done
+  done
+
+  # === Generate index (REVERSED order) ===
+  for (( idx=${#indexEntries[@]}-1 ; idx>=0 ; idx-- )); do
+    entry="${indexEntries[idx]}"
+    IFS='|' read -r name headline summary dmod image <<< "$entry"
     $tplTool "$templateIndexItem" \
       HEADLINE="$(base64_encode "$headline")" \
       SUMMARY="$(base64_encode "$summary")" \
       DMOD="$(base64_encode "$dmod")" \
       IMAGE="$(base64_encode "$image")" \
-      ARTICLEF="$(base64_encode "articles/$folderName.html")" \
+      ARTICLEF="$(base64_encode "articles/$name.html")" \
       >> "$indexTemp"
-
-    rsync -a --exclude="$markdownFile" "$dir" "$publishedArticles/$folderName/"
   done
 
-  # ...now pages
-  pageFolders=("$pagesDir/"*/)
-  for dir in "${pageFolders[@]}"; do
-    file="$dir$markdownFile"
-    [ -f "$file" ] || continue
-
-    folderName=$(basename "$dir")
-    dmod=$(date -d "@$(stat -c '%Y' "$file")" +"%Y-%m-%d %H:%M")
-    mkdir -p "$publishedPages/$folderName"
-    outputFile="$publishedPages/$folderName.html"
-
-    content=$(markdown "$file")
-    headline=$(echo "$content" | xml2asc | xmllint --html --xpath "//h2[1]/text()" - 2>/dev/null || true)
-    summary=$(echo "$content" | xml2asc | xmllint --html --xpath "//p[1]/text()" - 2>/dev/null || true)
-    image=$(echo "$content" | xml2asc | xmllint --html --xpath "string(//img[1]/@src)" - 2>/dev/null || true)
-    [ -n "$image" ] && image="\"@type\": \"imageObject\", \"url\": \"$image\""
-
-    $tplTool "$templatePage" \
-      HEADLINE="$(base64_encode "$headline")" \
-      SUMMARY="$(base64_encode "$summary")" \
-      DMOD="$(base64_encode "$dmod")" \
-      IMAGE="$(base64_encode "$image")" \
-      CONTENT="$(base64_encode "$content")" \
-      | hxnormalize -e -l 85 > "$outputFile"
-
-    rsync -a --exclude="$markdownFile" "$dir" "$publishedPages/$folderName/"
-  done
-
-  # Copy files / attachments
   cat "$templateIndexPost" >> "$indexTemp"
   hxnormalize -e -l 85 "$indexTemp" > "$indexFile"
   rm "$indexTemp"
   rsync -a "$assetsSrcD/" "$publishedAssets/"
-
   exit 0
 fi
