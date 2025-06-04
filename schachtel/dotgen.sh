@@ -54,10 +54,10 @@ if [ -z "$commando" ]; then
   echo "[DOT - a tiny static blog generator]"
   echo
   echo "Usage:"
-  echo "./dot init     ~/blog"
-  echo "./dot article  ~/blog slug"
-  echo "./dot page     ~/blog slug"
-  echo "./dot build    ~/blog [~/theme]"
+  echo "dot init     ~/blog"
+  echo "dot article  ~/blog slug"
+  echo "dot page     ~/blog slug"
+  echo "dot build    ~/blog [~/theme]"
   exit 0
 fi
 
