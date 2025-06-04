@@ -102,8 +102,9 @@ if [ "$commando" == "build" ]; then
   mkdir -p "$publishedArticles" "$publishedPages" "$publishedAssets"
   rm -f "$publishedRoot"/*.html > /dev/null 2>&1
 
-  # cat "$templateIndexPre" > "$indexTemp"
   siteTitle=$(jq -r '.siteTitle' ${blogRoot}/prefs.json)
+  authorName=$(jq -r '.author' ${blogRoot}/prefs.json)
+
   $tplTool "$templateIndexPre" \
     SITETITLE="$(base64_encode "$siteTitle")" \
     | hxnormalize -e -l 85 > "$indexTemp"
@@ -145,6 +146,7 @@ if [ "$commando" == "build" ]; then
       [ -n "$image" ] && image="\"@type\": \"imageObject\", \"url\": \"$image\""
 
       $tplTool "$template" \
+        AUTHOR="$(base64_encode "$authorName")" \
         HEADLINE="$(base64_encode "$headline")" \
         SUMMARY="$(base64_encode "$summary")" \
         DMOD="$(base64_encode "$dmod")" \
