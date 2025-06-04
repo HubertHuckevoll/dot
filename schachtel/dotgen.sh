@@ -130,7 +130,10 @@ if [ "$commando" == "build" ]; then
       htmlFile="$targetBase/$folderName.html"
       assetFolder="$targetBase/$folderName"
 
-      content=$(markdown "$file")
+      # Resolve markdown and recode
+      content=$(cat "$file" | recode utf8..html | markdown)
+
+      # extract some variables
       headline=$(echo "$content" | xml2asc | xmllint --html --xpath "//h2[1]/text()" - 2>/dev/null || true)
       summary=$(echo "$content" | xml2asc | xmllint --html --xpath "//p[1]/text()" - 2>/dev/null || true)
       image=$(echo "$content" | xml2asc | xmllint --html --xpath "string(//img[1]/@src)" - 2>/dev/null || true)
