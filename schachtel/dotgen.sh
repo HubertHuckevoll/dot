@@ -102,12 +102,12 @@ if [ "$commando" == "build" ]; then
   mkdir -p "$publishedArticles" "$publishedPages" "$publishedAssets"
   rm -f "$publishedRoot"/*.html > /dev/null 2>&1
 
+  # fetch some variables
   siteTitle=$(jq -r '.siteTitle' ${blogRoot}/prefs.json)
   authorName=$(jq -r '.author' ${blogRoot}/prefs.json)
 
-  $tplTool "$templateIndexPre" \
-    SITETITLE="$(base64_encode "$siteTitle")" \
-    | hxnormalize -e -l 85 > "$indexTemp"
+  # index page intro
+  cat "$templateIndexPre" > "$indexTemp"
 
   indexEntries=()
 
@@ -146,6 +146,7 @@ if [ "$commando" == "build" ]; then
       [ -n "$image" ] && image="\"@type\": \"imageObject\", \"url\": \"$image\""
 
       $tplTool "$template" \
+        SITETITLE="$(base64_encode "$siteTitle")" \
         AUTHOR="$(base64_encode "$authorName")" \
         HEADLINE="$(base64_encode "$headline")" \
         SUMMARY="$(base64_encode "$summary")" \
@@ -164,7 +165,8 @@ if [ "$commando" == "build" ]; then
     done
   done
 
-  # === Generate index (REVERSED order) ===
+  # === Generate index items (REVERSED order) ===
+  numArts=${#indexEntries[@]}
   for (( idx=${#indexEntries[@]}-1 ; idx>=0 ; idx-- )); do
     entry="${indexEntries[idx]}"
     IFS='|' read -r name headline summary dmod image <<< "$entry"
@@ -177,9 +179,14 @@ if [ "$commando" == "build" ]; then
       >> "$indexTemp"
   done
 
+  # index page outro
   cat "$templateIndexPost" >> "$indexTemp"
-  hxnormalize -e -l 85 "$indexTemp" > "$indexFile"
+  $tplTool "$indexTemp" \
+    SITETITLE="$(base64_encode "$siteTitle")" \
+    NUMARTS="$(base64_encode "$numArts")" \
+    | hxnormalize -e -l 85 > "$indexFile"
   rm "$indexTemp"
+
   rsync -a "$assetsSrcD/" "$publishedAssets/"
   exit 0
 fi
