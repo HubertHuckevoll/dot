@@ -103,7 +103,7 @@ if [ "$commando" == "build" ]; then
   rm -f "$publishedRoot"/*.html > /dev/null 2>&1
 
   # cat "$templateIndexPre" > "$indexTemp"
-  indexline=$(jq -r '.pageTitle' ${blogRoot}/prefs.json)
+  indexline=$(jq -r '.siteTitle' ${blogRoot}/prefs.json)
   $tplTool "$templateIndexPre" \
     INDEXLINE="$(base64_encode "$indexline")" \
     | hxnormalize -e -l 85 > "$indexTemp"
