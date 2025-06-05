@@ -151,8 +151,9 @@ if [ "$commando" == "build" ]; then
         SUMMARY="$(base64_encode "$summary")" \
         DMOD="$(base64_encode "$dmod")" \
         IMAGE="$(base64_encode "$image")" \
-        CONTENT="$(base64_encode "$content")" \
-        | hxnormalize -e -l 85 > "$htmlFile"
+        CONTENT="$(base64_encode "$content")" > "$htmlFile"
+
+      hxnormalize -e -l 85 "$htmlFile" | sponge "$htmlFile"
 
       # Copy assets into /articleName/
       mkdir -p "$assetFolder"
@@ -177,8 +178,7 @@ if [ "$commando" == "build" ]; then
       SUMMARY="$(base64_encode "$summary")" \
       DMOD="$(base64_encode "$dmod")" \
       IMAGE="$(base64_encode "$image")" \
-      ARTICLEF="$(base64_encode "articles/$name.html")" \
-      >> "$indexFile"
+      ARTICLEF="$(base64_encode "articles/$name.html")" >> "$indexFile"
   done
 
   # add index page outro
