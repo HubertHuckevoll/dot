@@ -46,7 +46,7 @@ base64_encode() {
   printf '%s' "$1" | base64 -w0
 }
 
-# === Command ===
+# command extraction
 commando="${1:-}"
 shift || true
 
@@ -61,14 +61,14 @@ if [ -z "$commando" ]; then
   exit 0
 fi
 
-# === INIT ===
+# init
 if [ "$commando" == "init" ]; then
   mkdir -p "$articlesDir" "$pagesDir"
   mkdir -p "$publishedArticles" "$publishedPages" "$publishedAssets"
   exit 0
 fi
 
-# === NEW ARTICLE ===
+# new article
 if [ "$commando" == "article" ]; then
   raw_slug="$2"
   slug=$(sanitize_slug "$raw_slug")
@@ -83,7 +83,7 @@ if [ "$commando" == "article" ]; then
   exit 0
 fi
 
-# === NEW PAGE ===
+# new page
 if [ "$commando" == "page" ]; then
   raw_slug="$2"
   slug=$(sanitize_slug "$raw_slug")
@@ -99,6 +99,8 @@ fi
 
 # === BUILD ===
 if [ "$commando" == "build" ]; then
+
+  # make sure folders are empty but exist
   mkdir -p "$publishedArticles" "$publishedPages" "$publishedAssets"
   rm -f "$publishedRoot"/*.html > /dev/null 2>&1
 
@@ -106,11 +108,8 @@ if [ "$commando" == "build" ]; then
   siteTitle=$(jq -r '.siteTitle' ${blogRoot}/prefs.json)
   authorName=$(jq -r '.author' ${blogRoot}/prefs.json)
 
-  # index page intro
-  cat "$templateIndexPre" > "$indexTemp"
-
+  # generate articles / pages
   indexEntries=()
-
   for kind in article page; do
     if [ "$kind" == "article" ]; then
       sourceFolders=("$articlesDir/"*/)
@@ -165,7 +164,10 @@ if [ "$commando" == "build" ]; then
     done
   done
 
-  # === Generate index items (REVERSED order) ===
+  # index page intro
+  cat "$templateIndexPre" > "$indexFile"
+
+  # generate index items (REVERSED order)
   numArts=${#indexEntries[@]}
   for (( idx=${#indexEntries[@]}-1 ; idx>=0 ; idx-- )); do
     entry="${indexEntries[idx]}"
@@ -176,17 +178,23 @@ if [ "$commando" == "build" ]; then
       DMOD="$(base64_encode "$dmod")" \
       IMAGE="$(base64_encode "$image")" \
       ARTICLEF="$(base64_encode "articles/$name.html")" \
-      >> "$indexTemp"
+      >> "$indexFile"
   done
 
-  # index page outro
-  cat "$templateIndexPost" >> "$indexTemp"
-  $tplTool "$indexTemp" \
-    SITETITLE="$(base64_encode "$siteTitle")" \
-    NUMARTS="$(base64_encode "$numArts")" \
-    | hxnormalize -e -l 85 > "$indexFile"
-  rm "$indexTemp"
+  # add index page outro
+  cat "$templateIndexPost" >> "$indexFile"
 
+  # now resolve template elements and remove temp file
+  $tplTool "$indexFile" \
+    SITETITLE="$(base64_encode "$siteTitle")" \
+    NUMARTS="$(base64_encode "$numArts")" | sponge "$indexFile"
+
+  # normalize index file
+  hxnormalize -e -l 85 "$indexFile" | sponge "$indexFile"
+
+  # rsync assets into published folder
   rsync -a "$assetsSrcD/" "$publishedAssets/"
+
+  # done
   exit 0
 fi
